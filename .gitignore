@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# env: committed .env.* files contain only non-secret placeholders for local dev;
+# override with real secrets via *.local files which are never committed
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Test coverage
+coverage/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+.mobile/
+
+# Prisma engines cache (downloaded per machine)
+.prisma/
+
+# Misc
+*.pem
+.vercel

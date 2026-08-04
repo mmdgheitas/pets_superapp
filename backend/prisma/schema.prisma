@@ -1,0 +1,438 @@
+// Pet Marketplace Platform — Prisma schema (MySQL)
+// Conventions:
+//  - Money is stored as Decimal(15,0) in IRR (Iranian Rial). No images are stored in the DB, only URLs.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum SellerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentGateway {
+  ZARINPAL
+  IDPAY
+}
+
+enum PetSpecies {
+  DOG
+  CAT
+  BIRD
+  FISH
+  RODENT
+  REPTILE
+  OTHER
+}
+
+enum PetGender {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum NotificationType {
+  INFO
+  ORDER
+  PAYMENT
+  PROMO
+  CHAT
+  SYSTEM
+}
+
+model User {
+  id            String   @id @default(uuid())
+  phone         String   @unique
+  email         String?  @unique
+  fullName      String?
+  avatarUrl     String?
+  role          Role     @default(CUSTOMER)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  pets          Pet[]
+  addresses     Address[]
+  cart          Cart?
+  orders        Order[]
+  reviews       Review[]
+  wishlist      WishlistItem[]
+  sellerProfile Seller?
+  notifications Notification[]
+  sentMessages  ChatMessage[]
+  chats         Chat[]
+  tickets       SupportTicket[]
+  deviceTokens  DeviceToken[]
+
+  @@map("users")
+}
+
+model DeviceToken {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  platform   String   @default("android")
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@map("device_tokens")
+}
+
+model Pet {
+  id         String     @id @default(uuid())
+  name       String
+  species    PetSpecies
+  breed      String?
+  gender     PetGender  @default(UNKNOWN)
+  ageMonths  Int?
+  weightKg   Decimal?   @db.Decimal(6, 2)
+  notes      String?    @db.Text
+  ownerId    String
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime   @default(now())
+
+  @@map("pets")
+}
+
+model Address {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String?
+  province      String
+  city          String
+  addressLine   String   @db.Text
+  postalCode    String?
+  receiverName  String
+  receiverPhone String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@map("addresses")
+}
+
+model Seller {
+  id             String       @id @default(uuid())
+  userId         String       @unique
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopName       String
+  shopSlug       String       @unique
+  bio            String?      @db.Text
+  logoUrl        String?
+  nationalId     String?
+  status         SellerStatus @default(PENDING)
+  commissionRate Decimal      @db.Decimal(5, 2) @default(5.00) // percent
+  ratingAvg      Decimal      @db.Decimal(3, 2) @default(0)
+  verifiedAt     DateTime?
+  rejectReason   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  products   Product[]
+  orderItems OrderItem[]
+  chats      Chat[]
+
+  @@map("sellers")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  icon      String?
+  imageUrl  String?
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Category[] @relation("CategoryTree")
+  sortOrder Int        @default(0)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String        @id @default(uuid())
+  sellerId      String
+  seller        Seller        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      Category      @relation(fields: [categoryId], references: [id])
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  price         Decimal       @db.Decimal(15, 0)
+  compareAtPrice Decimal?     @db.Decimal(15, 0)
+  stock         Int           @default(0)
+  status        ProductStatus @default(DRAFT)
+  ratingAvg     Decimal       @db.Decimal(3, 2) @default(0)
+  ratingCount   Int           @default(0)
+  soldCount     Int           @default(0)
+  attributes    Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  images        ProductImage[]
+  reviews       Review[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  wishlistItems WishlistItem[]
+
+  @@index([status, createdAt])
+  @@index([categoryId])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int     @default(0)
+
+  @@map("product_images")
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now())
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int     @default(1)
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          OrderStatus @default(PENDING_PAYMENT)
+  subtotal        Decimal     @db.Decimal(15, 0)
+  shippingFee     Decimal     @db.Decimal(15, 0) @default(0)
+  total           Decimal     @db.Decimal(15, 0)
+  shippingAddress Json
+  cancelReason    String?
+  paidAt          DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  reminderSentAt  DateTime?
+
+  items   OrderItem[]
+  payment Payment?
+
+  @@index([userId, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String  @id @default(uuid())
+  orderId          String
+  order            Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product @relation(fields: [productId], references: [id])
+  sellerId         String
+  seller           Seller  @relation(fields: [sellerId], references: [id])
+  title            String // snapshot of product title at purchase time
+  quantity         Int
+  unitPrice        Decimal @db.Decimal(15, 0)
+  totalPrice       Decimal @db.Decimal(15, 0)
+  commissionRate   Decimal @db.Decimal(5, 2)
+  commissionAmount Decimal @db.Decimal(15, 0)
+  sellerAmount     Decimal @db.Decimal(15, 0)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id         String         @id @default(uuid())
+  orderId    String         @unique
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount     Decimal        @db.Decimal(15, 0)
+  gateway    PaymentGateway @default(ZARINPAL)
+  status     PaymentStatus  @default(INITIATED)
+  authority  String?
+  refId      String?        // ZarinPal ref_id on success
+  description String?
+  verifiedAt DateTime?
+  createdAt  DateTime       @default(now())
+
+  @@index([status, createdAt])
+  @@map("payments")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating     Int      // 1..5
+  comment    String?  @db.Text
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@map("reviews")
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+model Chat {
+  id            String    @id @default(uuid())
+  buyerId       String
+  buyer         User      @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId      String
+  seller        Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+
+  messages ChatMessage[]
+
+  @@unique([buyerId, sellerId])
+  @@map("chats")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body      String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([chatId, createdAt])
+  @@map("chat_messages")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String           @db.Text
+  type      NotificationType @default(INFO)
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model Banner {
+  id        String    @id @default(uuid())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  position  String    @default("home_top")
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("banners")
+}
+
+model SupportTicket {
+  id         String       @id @default(uuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject    String
+  message    String       @db.Text
+  status     TicketStatus @default(OPEN)
+  adminReply String?      @db.Text
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@map("support_tickets")
+}
+
+model DailyReport {
+  id              String   @id @default(uuid())
+  date            DateTime @db.Date
+  ordersCount     Int      @default(0)
+  paidOrdersCount Int      @default(0)
+  revenue         Decimal  @db.Decimal(18, 0) @default(0)
+  commission      Decimal  @db.Decimal(18, 0) @default(0)
+  newUsers        Int      @default(0)
+  newSellers      Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@unique([date])
+  @@map("daily_reports")
+}
