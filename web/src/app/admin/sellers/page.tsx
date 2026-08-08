@@ -36,7 +36,7 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
 export default function AdminSellersPage() {
   const router = useRouter();
   const initialStatus = 'all';
-  const { token } = useAuthStore();
+  const { accessToken } = useAuthStore();
   const [sellers, setSellers] = useState<AdminSeller[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -50,7 +50,7 @@ export default function AdminSellersPage() {
   const [rejectReason, setRejectReason] = useState<Record<string, string>>({});
 
   const loadSellers = useCallback(async () => {
-    if (!token) return;
+    if (!accessToken) return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -64,15 +64,15 @@ export default function AdminSellersPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, page, statusFilter, limit]);
+  }, [accessToken, page, statusFilter, limit]);
 
   useEffect(() => {
-    if (!token) { router.replace('/login'); return; }
+    if (!accessToken) { router.replace('/login'); return; }
     const currentUser = useAuthStore.getState().user;
     if (!currentUser) return; // wait for auth hydration
     if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadSellers();
-  }, [token, router, loadSellers]);
+  }, [accessToken, router, loadSellers]);
 
   const approve = async (id: string) => {
     setApproveing(id);

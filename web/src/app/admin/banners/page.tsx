@@ -29,7 +29,7 @@ const POSITION_OPTIONS = [
 
 export default function AdminBannersPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { accessToken } = useAuthStore();
   const [banners, setBanners] = useState<BannerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,12 +47,12 @@ export default function AdminBannersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) { router.replace('/login'); return; }
+    if (!accessToken) { router.replace('/login'); return; }
     const currentUser = useAuthStore.getState().user;
     if (!currentUser) return; // wait for auth hydration
     if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadBanners();
-  }, [token, router]);
+  }, [accessToken, router]);
 
   const loadBanners = async () => {
     try {

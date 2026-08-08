@@ -90,7 +90,7 @@ function TicketItem({ ticket, onReply }: { ticket: SupportTicket; onReply: (id: 
 
 export default function AdminTicketsPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { accessToken } = useAuthStore();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -104,7 +104,7 @@ export default function AdminTicketsPage() {
   const [replyError, setReplyError] = useState('');
 
   const loadTickets = useCallback(async () => {
-    if (!token) return;
+    if (!accessToken) return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -118,15 +118,15 @@ export default function AdminTicketsPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, page, statusFilter, limit]);
+  }, [accessToken, page, statusFilter, limit]);
 
   useEffect(() => {
-    if (!token) { router.replace('/login'); return; }
+    if (!accessToken) { router.replace('/login'); return; }
     const currentUser = useAuthStore.getState().user;
     if (!currentUser) return; // wait for auth hydration
     if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadTickets();
-  }, [token, router, loadTickets]);
+  }, [accessToken, router, loadTickets]);
 
   const reply = async () => {
     if (!replyText.trim()) return;

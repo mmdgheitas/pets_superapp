@@ -97,13 +97,13 @@ function StatCard({
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { user, token } = useAuthStore();
+  const { user, accessToken } = useAuthStore();
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!token) {
+    if (!accessToken) {
       router.replace('/login');
       return;
     }
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
       return;
     }
     loadData();
-  }, [token, user, router]);
+  }, [accessToken, user, router]);
 
   const loadData = async () => {
     setLoading(true);

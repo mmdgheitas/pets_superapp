@@ -26,7 +26,7 @@ const ROLE_COLOR: Record<string, string> = {
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { accessToken } = useAuthStore();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -38,7 +38,7 @@ export default function AdminUsersPage() {
   const [toggling, setToggling] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
-    if (!token) return;
+    if (!accessToken) return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -53,15 +53,15 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, page, q, roleFilter, limit]);
+  }, [accessToken, page, q, roleFilter, limit]);
 
   useEffect(() => {
-    if (!token) { router.replace('/login'); return; }
+    if (!accessToken) { router.replace('/login'); return; }
     const currentUser = useAuthStore.getState().user;
     if (!currentUser) return; // wait for auth hydration
     if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadUsers();
-  }, [token, router, loadUsers]);
+  }, [accessToken, router, loadUsers]);
 
   const toggleActive = async (id: string, current: boolean) => {
     setToggling(id);

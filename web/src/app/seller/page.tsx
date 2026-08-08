@@ -87,14 +87,14 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function SellerDashboardPage() {
   const router = useRouter();
-  const { user, token } = useAuthStore();
+  const { user, accessToken } = useAuthStore();
   const [dashboard, setDashboard] = useState<SellerDashboard | null>(null);
   const [report, setReport] = useState<SalesReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!token) {
+    if (!accessToken) {
       router.replace('/login');
       return;
     }
@@ -107,7 +107,7 @@ export default function SellerDashboardPage() {
       return;
     }
     loadData();
-  }, [token, user, router]);
+  }, [accessToken, user, router]);
 
   const loadData = async () => {
     setLoading(true);

@@ -12,18 +12,18 @@ import type { DailyReport } from '@/lib/types';
 
 export default function AdminReportsPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { accessToken } = useAuthStore();
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!token) { router.replace('/login'); return; }
+    if (!accessToken) { router.replace('/login'); return; }
     const currentUser = useAuthStore.getState().user;
     if (!currentUser) return; // wait for auth hydration
     if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadReports();
-  }, [token, router]);
+  }, [accessToken, router]);
 
   const loadReports = async () => {
     setLoading(true);
