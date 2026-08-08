@@ -98,7 +98,11 @@ export default function SellerDashboardPage() {
       router.replace('/login');
       return;
     }
-    if (user?.role !== 'SELLER') {
+    if (!user) {
+      // Auth store not yet hydrated — wait for next render
+      return;
+    }
+    if (user.role !== 'SELLER') {
       router.replace('/');
       return;
     }
@@ -116,7 +120,7 @@ export default function SellerDashboardPage() {
       setDashboard(d.data);
       setReport(r.data);
     } catch (e) {
-      setError(errorMessage(e, ' barsگذاری داده‌ها ناموفق بود'));
+      setError(errorMessage(e, 'بارگذاری داده‌ها ناموفق بود'));
     } finally {
       setLoading(false);
     }
@@ -327,9 +331,12 @@ export default function SellerDashboardPage() {
       {/* Bottom note */}
       <div className="text-center text-sm text-muted-foreground">
         آیا فروشنده هستید؟{' '}
-        <Button variant="link" className="p-0 h-auto font-normal" asChild>
-          <a href="/login">ورود با اکانت دیگر</a>
-        </Button>
+        <a
+          href="/login"
+          className="text-primary underline-offset-4 hover:underline font-medium"
+        >
+          ورود با اکانت دیگر
+        </a>
       </div>
     </div>
   );

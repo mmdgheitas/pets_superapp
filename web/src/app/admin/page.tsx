@@ -107,7 +107,11 @@ export default function AdminDashboardPage() {
       router.replace('/login');
       return;
     }
-    if (user?.role !== 'ADMIN') {
+    if (!user) {
+      // Auth store not yet hydrated — wait for next render
+      return;
+    }
+    if (user.role !== 'ADMIN') {
       router.replace('/');
       return;
     }
@@ -198,7 +202,7 @@ export default function AdminDashboardPage() {
 
       {/* Navigation cards */}
       <div>
-        <h2 className="mb-4 text-lg font-bold">작업‌ها</h2>
+        <h2 className="mb-4 text-lg font-bold">کارهای بعدی</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {NAV_ITEMS.map((item) => (
             <Link key={item.href} href={item.href}>

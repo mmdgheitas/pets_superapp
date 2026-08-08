@@ -122,7 +122,9 @@ export default function AdminTicketsPage() {
 
   useEffect(() => {
     if (!token) { router.replace('/login'); return; }
-    if (token && useAuthStore.getState().user?.role !== 'ADMIN') { router.replace('/'); return; }
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser) return; // wait for auth hydration
+    if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadTickets();
   }, [token, router, loadTickets]);
 
