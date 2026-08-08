@@ -11,6 +11,64 @@ export interface SellerSummary {
   ratingAvg: number;
 }
 
+export interface SellerProfile {
+  id: string;
+  userId: string;
+  shopName: string;
+  shopSlug: string;
+  bio: string | null;
+  logoUrl: string | null;
+  nationalId: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  commissionRate: number;
+  ratingAvg: number;
+  verifiedAt: string | null;
+  rejectReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SellerStats {
+  totalProducts: number;
+  activeProducts: number;
+  outOfStock: number;
+  paidOrderItems: number;
+  unitsSold: number;
+  revenueIrr: number;
+  pendingFulfillment: number;
+}
+
+export interface SellerDashboard {
+  seller: SellerProfile;
+  stats: SellerStats;
+  recentSales: SellerRecentSale[];
+}
+
+export interface SellerRecentSale {
+  id: string;
+  title: string;
+  quantity: number;
+  sellerAmount: number;
+  order: {
+    id: string;
+    status: string;
+    createdAt: string;
+  };
+}
+
+export interface SalesReportSeries {
+  date: string;
+  revenue: number;
+  units: number;
+  orderItems: number;
+}
+
+export interface SalesReport {
+  sellerId: string;
+  days: number;
+  series: SalesReportSeries[];
+}
+
 export interface ProductCard {
   id: string;
   title: string;
@@ -125,4 +183,90 @@ export interface Address {
   receiverName: string;
   receiverPhone: string;
   isDefault: boolean;
+}
+
+// ------------------------------------------------------------------ Admin types
+
+export interface AdminDashboard {
+  users: { total: number; customers: number };
+  sellers: { PENDING: number; APPROVED: number };
+  products: { ACTIVE: number; DRAFT: number };
+  orders: { today: number; revenueToday: number };
+  tickets: { open: number };
+}
+
+export interface BannerItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  linkUrl: string | null;
+  position: string;
+  sortOrder: number;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string;
+}
+
+export interface DailyReport {
+  id: string;
+  date: string;
+  ordersCount: number;
+  paidOrdersCount: number;
+  revenue: number;
+  commission: number;
+  newUsers: number;
+  newSellers: number;
+  createdAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  phone: string;
+  email: string | null;
+  fullName: string | null;
+  role: 'CUSTOMER' | 'SELLER' | 'ADMIN';
+  isActive: boolean;
+  createdAt: string;
+  ordersCount: number;
+}
+
+export interface PaginatedUsers {
+  data: AdminUser[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
+}
+
+export interface AdminSeller {
+  id: string;
+  userId: string;
+  shopName: string;
+  shopSlug: string;
+  bio: string | null;
+  logoUrl: string | null;
+  nationalId: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  commissionRate: number;
+  ratingAvg: number;
+  verifiedAt: string | null;
+  rejectReason: string | null;
+  createdAt: string;
+  productsCount: number;
+  user: { phone: string; fullName: string | null };
+}
+
+export interface PaginatedSellers {
+  data: AdminSeller[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
+}
+
+export interface SupportTicket {
+  id: string;
+  userId: string;
+  subject: string;
+  message: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  adminReply: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user: { phone: string; fullName: string | null };
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PawPrint, ShoppingCart, UserRound, PackageSearch, LogOut } from 'lucide-react';
+import { PawPrint, ShoppingCart, UserRound, PackageSearch, LogOut, Store, Shield, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/auth-store';
 import { toPersianDigits } from '@/lib/format';
@@ -52,6 +52,16 @@ export function SiteHeader() {
           <Button variant="ghost" onClick={() => router.push('/products')}>
             <PackageSearch className="ml-1 h-4 w-4" /> محصولات
           </Button>
+          {user?.role === 'SELLER' && (
+            <Button variant="ghost" onClick={() => router.push('/seller')}>
+              <Store className="ml-1 h-4 w-4" /> فروشگاه
+            </Button>
+          )}
+          {user?.role === 'ADMIN' && (
+            <Button variant="ghost" onClick={() => router.push('/admin')}>
+              <Shield className="ml-1 h-4 w-4" /> مدیریت
+            </Button>
+          )}
         </nav>
 
         <div className="flex items-center gap-1">
@@ -66,6 +76,20 @@ export function SiteHeader() {
               <Link href="/orders">
                 <Button variant="ghost">سفارش‌ها</Button>
               </Link>
+              {user.role === 'SELLER' && (
+                <Link href="/seller">
+                  <Button variant="ghost" size="icon" aria-label="داشبورد فروشنده">
+                    <LayoutDashboard className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
+              {user.role === 'ADMIN' && (
+                <Link href="/admin">
+                  <Button variant="ghost" size="icon" aria-label="پنل مدیریت">
+                    <Shield className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
               <Link href="/profile">
                 <Button variant="ghost" size="icon" aria-label="پروفایل">
                   <UserRound className="h-5 w-5" />
