@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api, errorMessage } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
-import { toPersianDigits, formatToman, formatDate } from '@/lib/format';
+import { toPersianDigits, formatToman } from '@/lib/format';
 import type { ProductCard } from '@/lib/types';
 
 const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
@@ -80,7 +80,7 @@ export default function SellerProductsPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">محصولات من</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {products.length} محصول — فقط محصولات ثبت‌شده توسط شما
