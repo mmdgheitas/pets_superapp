@@ -1,20 +1,16 @@
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight, PackageSearch } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { serverGet } from '@/lib/server-api';
 import type { Category, Paginated, ProductCard as ProductCardType } from '@/lib/types';
 import { toPersianDigits } from '@/lib/format';
 import { SearchForm } from './search-form';
+import { SortSelect } from './sort-select';
+import { cn } from '@/lib/utils';
 
 export const revalidate = 60;
-
-const SORTS = [
-  { value: 'newest', label: 'جدیدترین' },
-  { value: 'best_selling', label: 'پرفروش‌ترین' },
-  { value: 'top_rated', label: 'محبوب‌ترین' },
-  { value: 'price_asc', label: 'ارزان‌ترین' },
-  { value: 'price_desc', label: 'گران‌ترین' },
-] as const;
 
 interface ProductsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -39,6 +35,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     serverGet<Category[]>('/categories'),
   ]);
 
+  const activeCategory = categories?.find((c) => c.slug === category);
+
   const buildHref = (over: Record<string, string>) => {
     const next = new URLSearchParams(query);
     for (const [k, v] of Object.entries(over)) {
@@ -49,70 +47,136 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-2xl font-bold">
-          {q ? `نتایج جستجو برای «${q}»` : 'همه محصولات'}
-        </h1>
-        <SearchForm initialQ={q ?? ''} />
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Link href={buildHref({ category: '', page: '1' })}>
-          <Button variant={!category ? 'default' : 'outline'} size="sm">
-            همه
-          </Button>
+    <div className="space-y-5">
+      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Link href="/" className="transition-colors hover:text-primary">خانه</Link>
+        <ChevronLeft className="h-3 w-3" />
+        <Link href="/products" className={cn(!category && !q && 'font-semibold text-foreground')}>
+          محصولات
         </Link>
-        {(categories ?? []).map((cat) => (
-          <Link key={cat.id} href={buildHref({ category: cat.slug, page: '1' })}>
-            <Button variant={category === cat.slug ? 'default' : 'outline'} size="sm">
-              {cat.icon} {cat.name}
-            </Button>
-          </Link>
-        ))}
+        {activeCategory && (
+          <>
+            <ChevronLeft className="h-3 w-3" />
+            <span className="font-semibold text-foreground">{activeCategory.name}</span>
+          </>
+        )}
+      </nav>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-extrabold sm:text-2xl">
+          {q ? `نتایج جستجو برای «${q}»` : activeCategory ? activeCategory.name : 'همه محصولات'}
+          {products && (
+            <span className="ms-2 text-sm font-normal text-muted-foreground">
+              ({toPersianDigits(products.meta.total)} کالا)
+            </span>
+          )}
+        </h1>
+        <div className="flex items-center gap-2">
+          <SearchForm initialQ={q ?? ''} />
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        مرتب‌سازی:
-        {SORTS.map((s) => (
-          <Link
-            key={s.value}
-            href={buildHref({ sort: s.value, page: '1' })}
-            className={sort === s.value ? 'font-bold text-primary' : 'hover:text-foreground'}
-          >
-            {s.label}
-          </Link>
-        ))}
-      </div>
-
-      {products && products.data.length > 0 ? (
-        <>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {products.data.map((p) => (
-              <ProductCard key={p.id} product={p} />
+      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
+        {/* Category filter rail — persistent context, one click away from any category
+            (avoids the "back button tax" of nested menus) */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-20 space-y-1 rounded-xl border bg-card p-3 shadow-xs">
+            <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              دسته‌بندی‌ها
+            </p>
+            <Link
+              href={buildHref({ category: '', page: '1' })}
+              className={cn(
+                'block rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent',
+                !category ? 'bg-accent font-semibold text-accent-foreground' : 'text-foreground/80',
+              )}
+            >
+              همه محصولات
+            </Link>
+            {(categories ?? []).map((cat) => (
+              <Link
+                key={cat.id}
+                href={buildHref({ category: cat.slug, page: '1' })}
+                className={cn(
+                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent',
+                  category === cat.slug ? 'bg-accent font-semibold text-accent-foreground' : 'text-foreground/80',
+                )}
+              >
+                <span>{cat.icon}</span>
+                {cat.name}
+              </Link>
             ))}
           </div>
-          <div className="flex items-center justify-center gap-4 pt-4">
-            {page > 1 && (
-              <Link href={buildHref({ page: String(page - 1) })}>
-                <Button variant="outline">صفحه قبل</Button>
+        </aside>
+
+        <div className="min-w-0 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2 lg:hidden">
+              <Link href={buildHref({ category: '', page: '1' })}>
+                <Button variant={!category ? 'default' : 'outline'} size="sm">
+                  همه
+                </Button>
               </Link>
-            )}
-            <span className="text-sm text-muted-foreground">
-              صفحه {toPersianDigits(page)} از {toPersianDigits(products.meta.totalPages)}
-            </span>
-            {page < products.meta.totalPages && (
-              <Link href={buildHref({ page: String(page + 1) })}>
-                <Button variant="outline">صفحه بعد</Button>
-              </Link>
-            )}
+              {(categories ?? []).map((cat) => (
+                <Link key={cat.id} href={buildHref({ category: cat.slug, page: '1' })}>
+                  <Button variant={category === cat.slug ? 'default' : 'outline'} size="sm">
+                    {cat.icon} {cat.name}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+            <div className="ms-auto">
+              <SortSelect value={sort} />
+            </div>
           </div>
-        </>
-      ) : (
-        <p className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-          محصولی مطابق جستجوی شما پیدا نشد.
-        </p>
-      )}
+
+          {products && products.data.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+                {products.data.map((p, i) => (
+                  <div key={p.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
+                    <ProductCard product={p} />
+                  </div>
+                ))}
+              </div>
+
+              {products.meta.totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 pt-4">
+                  <Link
+                    href={buildHref({ page: String(page - 1) })}
+                    aria-disabled={page <= 1}
+                    className={cn(page <= 1 && 'pointer-events-none opacity-40')}
+                  >
+                    <Button variant="outline" size="icon" aria-label="صفحه قبل">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <span className="text-sm font-medium text-muted-foreground num-tabular">
+                    صفحه {toPersianDigits(page)} از {toPersianDigits(products.meta.totalPages)}
+                  </span>
+                  <Link
+                    href={buildHref({ page: String(page + 1) })}
+                    aria-disabled={page >= products.meta.totalPages}
+                    className={cn(page >= products.meta.totalPages && 'pointer-events-none opacity-40')}
+                  >
+                    <Button variant="outline" size="icon" aria-label="صفحه بعد">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </>
+          ) : (
+            <EmptyState
+              icon={<PackageSearch className="mx-auto h-12 w-12 text-muted-foreground" />}
+              title="محصولی پیدا نشد"
+              description="می‌توانید فیلترها را تغییر دهید یا عبارت دیگری را جستجو کنید."
+              actionLabel="مشاهده همه محصولات"
+              actionHref="/products"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

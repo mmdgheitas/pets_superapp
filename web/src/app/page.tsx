@@ -1,11 +1,20 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowLeft, ShieldCheck, Truck, RotateCcw, Headset, Star } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { serverGet } from '@/lib/server-api';
 import type { Banner, Category, ProductCard as ProductCardType } from '@/lib/types';
 
 export const revalidate = 60;
+
+const TRUST_POINTS = [
+  { icon: ShieldCheck, title: 'پرداخت ۱۰۰٪ امن', desc: 'درگاه مستقیم زرین‌پال' },
+  { icon: Truck, title: 'ارسال سریع', desc: 'به سراسر کشور' },
+  { icon: RotateCcw, title: 'ضمانت بازگشت کالا', desc: 'در صورت مغایرت' },
+  { icon: Headset, title: 'پشتیبانی پاسخگو', desc: 'هر روز هفته' },
+];
 
 export default async function HomePage() {
   const [banners, categories, featured] = await Promise.all([
@@ -14,59 +23,130 @@ export default async function HomePage() {
     serverGet<ProductCardType[]>('/products/featured'),
   ]);
 
+  const banner = banners?.[0];
+
   return (
-    <div className="space-y-10">
-      {banners && banners.length > 0 && (
-        <section className="overflow-hidden rounded-xl">
-          <Link href={banners[0].linkUrl ?? '/products'} className="relative block aspect-[3/1] w-full">
+    <div className="space-y-12">
+      {/* Hero — single, unmistakable primary action above the fold (Hick's law: fewer
+          competing choices = faster decisions) */}
+      <section className="overflow-hidden rounded-2xl">
+        {banner ? (
+          <Link href={banner.linkUrl ?? '/products'} className="group relative block aspect-[16/7] w-full sm:aspect-[3/1]">
             <Image
-              src={banners[0].imageUrl}
-              alt={banners[0].title}
+              src={banner.imageUrl}
+              alt={banner.title}
               fill
               priority
-              className="object-cover"
+              sizes="100vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-              <h2 className="text-lg font-bold text-white">{banners[0].title}</h2>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
+              <h2 className="max-w-lg text-balance text-lg font-extrabold text-white sm:text-3xl">
+                {banner.title}
+              </h2>
+              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-foreground shadow-raised">
+                مشاهده محصولات <ArrowLeft className="h-4 w-4" />
+              </span>
             </div>
           </Link>
+        ) : (
+          <div className="relative flex aspect-[16/9] flex-col items-center justify-center gap-4 bg-gradient-to-br from-primary to-primary-hover px-6 text-center text-primary-foreground sm:aspect-[3/1]">
+            <span className="text-5xl">🐾</span>
+            <h1 className="text-balance text-2xl font-extrabold sm:text-3xl">
+              هر چیزی که برای حیوان خانگی‌تان لازم دارید
+            </h1>
+            <p className="max-w-md text-sm text-white/85 sm:text-base">
+              غذا، اسباب‌بازی و لوازم بهداشتی با ارسال سریع و پرداخت امن
+            </p>
+            <Link href="/products">
+              <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
+                شروع خرید <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {/* Trust bar — builds credibility up front, before asking the shopper to commit to
+          anything (authority & risk-reduction cues lower purchase anxiety) */}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {TRUST_POINTS.map(({ icon: Icon, title, desc }) => (
+          <div
+            key={title}
+            className="flex items-center gap-3 rounded-xl border bg-card p-3.5 shadow-xs sm:p-4"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-bg text-success">
+              <Icon className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold">{title}</p>
+              <p className="truncate text-xs text-muted-foreground">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {categories && categories.length > 0 && (
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold">دسته‌بندی‌ها</h2>
+          </div>
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+            {categories.slice(0, 8).map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/products?category=${cat.slug}`}
+                className="group flex flex-col items-center gap-2 rounded-xl border bg-card p-4 text-center shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-2xl transition-transform group-hover:scale-110">
+                  {cat.icon ?? '🐾'}
+                </span>
+                <span className="text-xs font-semibold sm:text-sm">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
       <section>
-        <h2 className="mb-4 text-xl font-bold">دسته‌بندی‌ها</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-          {(categories ?? []).slice(0, 8).map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/products?category=${cat.slug}`}
-              className="flex flex-col items-center gap-2 rounded-lg border bg-card p-4 transition-shadow hover:shadow"
-            >
-              <span className="text-3xl">{cat.icon ?? '🐾'}</span>
-              <span className="text-sm font-medium">{cat.name}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold">پرفروش‌ترین‌ها</h2>
+          <div className="flex items-center gap-2">
+            <Star className="h-5 w-5 fill-warning text-warning" />
+            <h2 className="text-xl font-bold">پرفروش‌ترین‌ها</h2>
+          </div>
           <Link href="/products?sort=best_selling">
-            <Button variant="link">مشاهده همه ←</Button>
+            <Button variant="ghost" size="sm" className="gap-1 text-primary hover:text-primary">
+              مشاهده همه <ArrowLeft className="h-3.5 w-3.5" />
+            </Button>
           </Link>
         </div>
         {featured && featured.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {featured.map((p, i) => (
+              <div key={p.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
+                <ProductCard product={p} />
+              </div>
             ))}
           </div>
         ) : (
-          <p className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-            فعلاً محصولی ثبت نشده است — به‌زودی!
-          </p>
+          <EmptyState icon="📦" title="فعلاً محصولی ثبت نشده" description="به‌زودی محصولات جدید اضافه می‌شوند." />
         )}
+      </section>
+
+      {/* Seller acquisition CTA — secondary path, visually subordinate to the shopping flow */}
+      <section className="flex flex-col items-center gap-4 rounded-2xl bg-secondary p-6 text-center sm:flex-row sm:justify-between sm:text-start">
+        <div>
+          <h3 className="text-lg font-bold text-secondary-foreground">فروشنده لوازم حیوانات خانگی هستید؟</h3>
+          <p className="mt-1 text-sm text-secondary-foreground/80">
+            فروشگاه خود را رایگان راه‌اندازی کنید و به هزاران مشتری دسترسی پیدا کنید.
+          </p>
+        </div>
+        <Link href="/seller">
+          <Button variant="default" className="shrink-0">
+            شروع فروش
+          </Button>
+        </Link>
       </section>
     </div>
   );

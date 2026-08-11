@@ -34,6 +34,7 @@ const createSchema = z.object({
     }, 'قیمت حداقل ۱۰۰۰ ریال باشد'),
   compareAtPrice: z.string().min(1).optional(),
   stock: z.string().min(1).refine((v) => !isNaN(parseInt(v, 10)) && parseInt(v, 10) >= 0, 'شماره معتبر نیست'),
+  status: z.enum(['ACTIVE', 'DRAFT']),
   images: z.string().optional(),
 });
 
@@ -47,12 +48,16 @@ export default function NewProductPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const form = useForm<FormData>({ resolver: zodResolver(createSchema), defaultValues: { compareAtPrice: '', images: '' } });
+  const form = useForm<FormData>({
+    resolver: zodResolver(createSchema),
+    defaultValues: { compareAtPrice: '', images: '', status: 'ACTIVE' },
+  });
 
   useEffect(() => {
     if (!accessToken) { router.replace('/login'); return; }
-    if (!useAuthStore.getState().user) return;
-    if (useAuthStore.getState().user.role !== 'SELLER') { router.replace('/'); return; }
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser) return;
+    if (currentUser.role !== 'SELLER') { router.replace('/'); return; }
     loadData();
   }, [accessToken, router]);
 
@@ -78,6 +83,7 @@ export default function NewProductPage() {
         price: parseInt(data.price, 10),
         compareAtPrice: data.compareAtPrice ? parseInt(data.compareAtPrice, 10) : undefined,
         stock: parseInt(data.stock, 10),
+        status: data.status,
         images: data.images ? data.images.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
       };
       const { data: product } = await api.post<ProductCard>('/products', payload);
@@ -192,7 +198,7 @@ export default function NewProductPage() {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">وضعیت</label>
-                <Select defaultValue="ACTIVE">
+                <Select value={form.watch('status')} onValueChange={(v) => form.setValue('status', v as 'ACTIVE' | 'DRAFT')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

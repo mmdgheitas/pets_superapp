@@ -16,7 +16,7 @@ import {
 import { api, errorMessage } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { toPersianDigits, formatDate } from '@/lib/format';
-import type { SupportTicket, PaginatedSellers } from '@/lib/types';
+import type { SupportTicket, Paginated } from '@/lib/types';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'همه وضعیت‌ها' },
@@ -109,7 +109,7 @@ export default function AdminTicketsPage() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
       if (statusFilter !== 'all') params.set('status', statusFilter);
-      const { data } = await api.get<PaginatedSellers>(`/admin/tickets?${params}`);
+      const { data } = await api.get<Paginated<SupportTicket>>(`/admin/tickets?${params}`);
       setTickets(data.data);
       setTotal(data.meta.total);
     } catch (e) {

@@ -19,7 +19,7 @@ import {
 import { api, errorMessage } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { toPersianDigits, formatToman, formatDate } from '@/lib/format';
-import type { Category, ProductCard } from '@/lib/types';
+import type { Category, ProductCard, ProductDetail } from '@/lib/types';
 
 const editSchema = z.object({
   title: z.string().min(3, 'عنوان حداقل ۳ کاراکتر باشد').max(200),
@@ -38,7 +38,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const resolved = use(params);
   const router = useRouter();
   const { accessToken } = useAuthStore();
-  const [product, setProduct] = useState<ProductCard | null>(null);
+  const [product, setProduct] = useState<ProductDetail | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -60,15 +60,16 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (!accessToken) { router.replace('/login'); return; }
-    if (!useAuthStore.getState().user) return;
-    if (useAuthStore.getState().user.role !== 'SELLER') { router.replace('/'); return; }
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser) return;
+    if (currentUser.role !== 'SELLER') { router.replace('/'); return; }
     loadData();
   }, [accessToken, router]);
 
   const loadData = async () => {
     try {
       const [prod, cats] = await Promise.all([
-        api.get<ProductCard>(`/products/${resolved.id}`),
+        api.get<ProductDetail>(`/products/${resolved.id}`),
         api.get<Category[]>('/categories'),
       ]);
       setProduct(prod.data);

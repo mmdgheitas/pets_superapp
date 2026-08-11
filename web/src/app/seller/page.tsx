@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import type { Role, SellerDashboard, SalesReport, SalesReportSeries } from '@/lib/types';
+import type { SellerDashboard, SalesReport, SalesReportSeries } from '@/lib/types';
 
 const CHART_COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd'];
 
