@@ -28,9 +28,9 @@ export default function SellerProductsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!accessToken) { router.replace('/login'); return; }
-    if (!user) return;
-    if (user.role !== 'SELLER') { router.replace('/'); return; }
+    // if (!accessToken) { router.replace('/login'); return; }
+    // if (!user) return;
+    // if (user.role !== 'SELLER') { router.replace('/'); return; }
     loadProducts();
   }, [accessToken, user, router]);
 

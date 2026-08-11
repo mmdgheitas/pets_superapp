@@ -95,7 +95,7 @@ export class ProductsService {
 
   async findBySlug(slug: string) {
     const product = await this.prisma.product.findUnique({
-      where: { slug },
+      where: { id:slug },
       include: {
         ...PRODUCT_CARD_INCLUDE,
         images: { orderBy: { sortOrder: 'asc' } },
@@ -107,6 +107,7 @@ export class ProductsService {
         },
       },
     });
+
     if (!product || product.status !== 'ACTIVE') {
       throw new NotFoundException('محصول یافت نشد');
     }

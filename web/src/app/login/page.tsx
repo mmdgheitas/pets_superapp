@@ -18,7 +18,7 @@ const phoneSchema = z.object({
 });
 const otpSchema = z.object({
   code: z.string().min(4).max(8),
-  fullName: z.string().max(100).optional(),
+  // fullName: z.string().max(100).optional() || '',
 });
 type PhoneForm = z.infer<typeof phoneSchema>;
 type OtpForm = z.infer<typeof otpSchema>;
@@ -70,13 +70,13 @@ export default function LoginPage() {
     }
   };
 
-  const verifyOtp = async ({ code, fullName }: OtpForm) => {
+  const verifyOtp = async ({ code }: OtpForm) => {
     setError('');
     try {
       const { data } = await api.post<VerifyResponse>('/auth/otp/verify', {
         phone,
         code,
-        ...(fullName ? { fullName } : {}),
+        // ...(fullName ? { fullName } : {}),
       });
       setAuth(data);
       router.replace('/');
@@ -136,7 +136,7 @@ export default function LoginPage() {
                 </p>
               )}
               <Input dir="ltr" placeholder="کد ۵ رقمی" inputMode="numeric" {...otpForm.register('code')} />
-              <Input placeholder="نام و نام خانوادگی (اختیاری)" {...otpForm.register('fullName')} />
+              <Input placeholder="نام و نام خانوادگی (اختیاری)"  />
               <Button type="submit" className="w-full" disabled={otpForm.formState.isSubmitting}>
                 {otpForm.formState.isSubmitting ? 'در حال بررسی…' : 'تأیید و ورود'}
               </Button>

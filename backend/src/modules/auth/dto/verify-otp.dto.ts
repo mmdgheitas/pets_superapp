@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { IRAN_PHONE_REGEX } from './request-otp.dto';
 
 export class VerifyOtpDto {
@@ -16,6 +16,7 @@ export class VerifyOtpDto {
 
   @ApiPropertyOptional({ example: 'علی محمدی', description: 'نام؛ فقط هنگام ثبت‌نام اولیه' })
   @IsString()
+  @IsOptional()
   @MaxLength(100)
   fullName?: string;
 }

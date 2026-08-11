@@ -62,6 +62,12 @@ export class ProductsController {
     return this.products.create(userId, dto);
   }
 
+  @Get(':id')
+  findOne(@CurrentUser('id') userId: string, @Param('id', ParseUUIDPipe) id: string) {
+    console.log(`Fetching product with ID: ${id} for user: ${userId}`);
+    return this.products.findBySlug(id);
+  }
+
   @Patch(':id')
   @Roles(Role.SELLER, Role.ADMIN)
   @ApiBearerAuth('access-token')

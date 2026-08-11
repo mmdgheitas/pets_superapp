@@ -21,7 +21,7 @@ export class AuthController {
   @Public()
   @Post('otp/request')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 600_000 } })
+  @Throttle({ default: { limit: 10, ttl: 600_000 } })
   @ApiOperation({ summary: 'ارسال کد تأیید پیامکی (OTP) — انقضا: ۱۲۰ ثانیه' })
   @ApiResponse({ status: 200, description: 'کد ارسال شد' })
   requestOtp(@Body() dto: RequestOtpDto) {
@@ -31,7 +31,7 @@ export class AuthController {
   @Public()
   @Post('otp/verify')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 10, ttl: 600_000 } })
+  @Throttle({ default: { limit: 100, ttl: 600_000 } })
   @ApiOperation({ summary: 'تأیید کد و دریافت توکن دسترسی/تازه‌سازی' })
   verifyOtp(@Body() dto: VerifyOtpDto) {
     return this.auth.verifyOtp(dto.phone, dto.code, dto.fullName);
