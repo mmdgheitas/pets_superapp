@@ -115,3 +115,10 @@ export class TicketsQueryDto extends PaginationQueryDto {
   @IsEnum(TicketStatus)
   status?: TicketStatus;
 }
+
+export class AdminSellersQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ enum: ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'] })
+  @IsOptional()
+  @IsIn(['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'])
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+}

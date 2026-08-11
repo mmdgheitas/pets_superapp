@@ -115,22 +115,29 @@ export class AdminService {
 
   // ------------------------------------------------------------------ sellers
 
-  async sellers(status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED') {
-    const items = await this.prisma.seller.findMany({
-      where: status ? { status } : {},
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: { select: { phone: true, fullName: true } },
-        _count: { select: { products: true } },
-      },
-    });
-    return items.map((s) => ({
+  async sellers(query: { status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'; page: number; limit: number; skip: number }) {
+    const where: Prisma.SellerWhereInput = query.status ? { status: query.status } : {};
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.seller.count({ where }),
+      this.prisma.seller.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: query.skip,
+        take: query.limit,
+        include: {
+          user: { select: { phone: true, fullName: true } },
+          _count: { select: { products: true } },
+        },
+      }),
+    ]);
+    const mapped = items.map((s) => ({
       ...s,
       commissionRate: Number(s.commissionRate),
       ratingAvg: Number(s.ratingAvg),
       productsCount: s._count.products,
       _count: undefined,
     }));
+    return paginate(mapped, total, query);
   }
 
   async approveSeller(id: string, commissionRate?: number) {

@@ -59,5 +59,11 @@ export function errorMessage(error: unknown, fallback = 'خطایی رخ داد'
     if (Array.isArray(message)) return message.join('، ');
     if (typeof message === 'string') return message;
   }
+  // Not an API error (e.g. a bug in how we parsed a response) — surface it in
+  // the console so it's actually diagnosable instead of a silent generic toast.
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.error('[errorMessage] unexpected error:', error);
+  }
   return fallback;
 }

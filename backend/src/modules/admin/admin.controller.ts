@@ -19,6 +19,7 @@ import { PaymentsService } from '../payments/payments.service';
 import { AdminService } from './admin.service';
 import {
   AdminPaymentsQueryDto,
+  AdminSellersQueryDto,
   AdminUsersQueryDto,
   ApproveSellerDto,
   CreateBannerDto,
@@ -70,9 +71,11 @@ export class AdminController {
 
   @Get('sellers')
   @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'] })
-  @ApiOperation({ summary: 'لیست فروشندگان (فیلتر وضعیت)' })
-  sellers(@Query('status') status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED') {
-    return this.admin.sellers(status);
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiOperation({ summary: 'لیست فروشندگان (فیلتر وضعیت + صفحه‌بندی)' })
+  sellers(@Query() query: AdminSellersQueryDto) {
+    return this.admin.sellers(query);
   }
 
   @Post('sellers/:id/approve')
