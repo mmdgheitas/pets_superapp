@@ -95,7 +95,7 @@ export class ProductsService {
 
   async findBySlug(slug: string) {
     const product = await this.prisma.product.findUnique({
-      where: { id:slug },
+      where: { slug },
       include: {
         ...PRODUCT_CARD_INCLUDE,
         images: { orderBy: { sortOrder: 'asc' } },
@@ -110,6 +110,33 @@ export class ProductsService {
 
     if (!product || product.status !== 'ACTIVE') {
       throw new NotFoundException('محصول یافت نشد');
+    }
+    return this.toCard(product, true);
+  }
+
+  /** [Seller/Admin] Full product detail by id, regardless of status — used to
+   *  load a draft/inactive product for editing (the public findBySlug above
+   *  deliberately only ever returns ACTIVE listings). */
+  async findByIdForOwner(userId: string, role: string, productId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        ...PRODUCT_CARD_INCLUDE,
+        images: { orderBy: { sortOrder: 'asc' } },
+        reviews: {
+          where: { isApproved: true },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          include: { user: { select: { fullName: true, avatarUrl: true } } },
+        },
+      },
+    });
+    if (!product) throw new NotFoundException('محصول یافت نشد');
+    if (role !== 'ADMIN') {
+      const seller = await this.prisma.seller.findUnique({ where: { userId } });
+      if (!seller || product.sellerId !== seller.id) {
+        throw new NotFoundException('محصول یافت نشد');
+      }
     }
     return this.toCard(product, true);
   }
@@ -166,7 +193,7 @@ export class ProductsService {
         compareAtPrice: dto.compareAtPrice,
         stock: dto.stock,
         attributes: dto.attributes as Prisma.InputJsonValue,
-        status: 'ACTIVE', // Phase 1: approved sellers publish directly; admin moderates afterwards
+        status: dto.status ?? 'ACTIVE', // sellers may publish directly or save as draft
         images: dto.images?.length
           ? { create: dto.images.map((url, i) => ({ url, sortOrder: i })) }
           : undefined,

@@ -1,17 +1,18 @@
 'use client';
 
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Upload } from 'lucide-react';
+import { ArrowRight, Upload, Clock, Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PageSpinner } from '@/components/ui/page-spinner';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ProductImagesField } from '@/components/product-images-field';
 import {
   Select,
   SelectContent,
@@ -19,11 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Field } from '@/components/ui/field';
 import { api, errorMessage } from '@/lib/api';
 import { toast } from '@/lib/toast-store';
+import { useSeller } from '@/lib/seller-context';
 import type { Category, ProductCard } from '@/lib/types';
-import { Field } from '../field';
-import { ImagesUrlsInput } from '../images-urls-input';
 
 const createSchema = z.object({
   title: z.string().min(3, 'عنوان حداقل ۳ کاراکتر باشد').max(200),
@@ -45,6 +46,37 @@ const createSchema = z.object({
 type FormData = z.infer<typeof createSchema>;
 
 export default function NewProductPage() {
+  const { seller, loading: sellerLoading, notRegistered } = useSeller();
+
+  if (sellerLoading) return <PageSpinner />;
+
+  if (notRegistered || !seller) {
+    return (
+      <EmptyState
+        icon={<Package className="mx-auto h-12 w-12 text-muted-foreground" />}
+        title="ابتدا فروشگاه خود را ثبت کنید"
+        actionLabel="ثبت‌نام فروشندگی"
+        actionHref="/seller"
+      />
+    );
+  }
+
+  if (seller.status !== 'APPROVED') {
+    return (
+      <EmptyState
+        icon={<Clock className="mx-auto h-12 w-12 text-warning" />}
+        title="فروشگاه شما هنوز تأیید نشده است"
+        description="پس از تأیید درخواست فروشندگی توسط ادمین، می‌توانید محصول ثبت کنید."
+        actionLabel="بازگشت به داشبورد"
+        actionHref="/seller"
+      />
+    );
+  }
+
+  return <NewProductForm />;
+}
+
+function NewProductForm() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +109,10 @@ export default function NewProductPage() {
         images: data.images ? data.images.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
       };
       const { data: product } = await api.post<ProductCard>('/products', payload);
-      toast({ title: 'محصول ثبت شد', variant: 'success' });
+      toast({
+        title: data.status === 'DRAFT' ? 'محصول به‌عنوان پیش‌نویس ذخیره شد' : 'محصول با موفقیت منتشر شد 🎉',
+        variant: 'success',
+      });
       router.push(`/seller/products/${product.id}`);
     } catch (e) {
       toast({ title: 'ثبت محصول ناموفق بود', description: errorMessage(e), variant: 'destructive' });
@@ -136,7 +171,7 @@ export default function NewProductPage() {
               <Field label="موجودی" required error={form.formState.errors.stock?.message}>
                 <Input {...form.register('stock')} placeholder="۱۲" inputMode="numeric" dir="ltr" />
               </Field>
-              <Field label="وضعیت">
+              <Field label="وضعیت انتشار">
                 <Select value={form.watch('status')} onValueChange={(v) => form.setValue('status', v as 'ACTIVE' | 'DRAFT')}>
                   <SelectTrigger>
                     <SelectValue />
@@ -149,11 +184,8 @@ export default function NewProductPage() {
               </Field>
             </div>
 
-            <Field label="تصاویر (آدرس‌ها، حداکثر ۵ تا)">
-              <ImagesUrlsInput {...form.register('images')} value={form.watch('images') ?? ''} />
-              <p className="text-xs text-muted-foreground">
-                آدرس‌های مستقیم تصاویر را با «,» از هم جدا کنید. از /upload/images برای آپلود استفاده کنید.
-              </p>
+            <Field label="تصاویر محصول">
+              <ProductImagesField value={form.watch('images') ?? ''} onChange={(v) => form.setValue('images', v)} />
             </Field>
 
             <div className="flex gap-2 pt-1">

@@ -3,13 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Edit, Trash2, Plus, Package, Search, Loader2 } from 'lucide-react';
+import { Edit, Trash2, Plus, Package, Search, Loader2, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PageSpinner } from '@/components/ui/page-spinner';
 import { ProductGridSkeleton } from '@/components/product-card-skeleton';
+import { useSeller } from '@/lib/seller-context';
 import { api, errorMessage } from '@/lib/api';
 import { toPersianDigits, formatToman } from '@/lib/format';
 import { toast } from '@/lib/toast-store';
@@ -23,6 +25,38 @@ const STATUS_LABELS: Record<string, { label: string; variant: BadgeProps['varian
 };
 
 export default function SellerProductsPage() {
+  const { seller, loading: sellerLoading, notRegistered } = useSeller();
+
+  if (sellerLoading) return <PageSpinner />;
+
+  if (notRegistered || !seller) {
+    return (
+      <EmptyState
+        icon={<Package className="mx-auto h-12 w-12 text-muted-foreground" />}
+        title="ابتدا فروشگاه خود را ثبت کنید"
+        description="برای افزودن محصول، ابتدا باید به‌عنوان فروشنده ثبت‌نام کنید."
+        actionLabel="ثبت‌نام فروشندگی"
+        actionHref="/seller"
+      />
+    );
+  }
+
+  if (seller.status !== 'APPROVED') {
+    return (
+      <EmptyState
+        icon={<Clock className="mx-auto h-12 w-12 text-warning" />}
+        title="فروشگاه شما هنوز تأیید نشده است"
+        description="پس از تأیید درخواست فروشندگی توسط ادمین، می‌توانید محصول ثبت کنید."
+        actionLabel="بازگشت به داشبورد"
+        actionHref="/seller"
+      />
+    );
+  }
+
+  return <ProductsList />;
+}
+
+function ProductsList() {
   const [products, setProducts] = useState<ProductCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

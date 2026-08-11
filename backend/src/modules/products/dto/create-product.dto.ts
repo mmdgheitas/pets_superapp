@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
+  IsIn,
   IsInt,
   IsNumber,
   IsObject,
@@ -45,6 +46,15 @@ export class CreateProductDto {
   @IsInt()
   @Min(0)
   stock: number;
+
+  @ApiPropertyOptional({
+    example: 'ACTIVE',
+    description: 'ACTIVE برای انتشار فوری، DRAFT برای پیش‌نویس (پیش‌فرض: ACTIVE)',
+    enum: ['ACTIVE', 'DRAFT'],
+  })
+  @IsOptional()
+  @IsIn(['ACTIVE', 'DRAFT'])
+  status?: 'ACTIVE' | 'DRAFT';
 
   @ApiPropertyOptional({
     example: 'https://cdn.example.com/p/royal-1.webp,https://cdn.example.com/p/royal-2.webp',
@@ -103,6 +113,11 @@ export class UpdateProductDto {
   @IsInt()
   @Min(0)
   stock?: number;
+
+  @ApiPropertyOptional({ enum: ['ACTIVE', 'DRAFT', 'INACTIVE'] })
+  @IsOptional()
+  @IsIn(['ACTIVE', 'DRAFT', 'INACTIVE'])
+  status?: 'ACTIVE' | 'DRAFT' | 'INACTIVE';
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()

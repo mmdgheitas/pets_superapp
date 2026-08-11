@@ -12,12 +12,17 @@ import {
   Calendar,
   Store,
   RefreshCcw,
+  Clock,
+  XCircle,
+  Ban,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { StatCard } from '@/components/ui/stat-card';
 import { PageSpinner } from '@/components/ui/page-spinner';
+import { SellerRegisterForm } from '@/components/seller-register-form';
+import { useSeller } from '@/lib/seller-context';
 import { api, errorMessage } from '@/lib/api';
 import { toPersianDigits, formatToman, formatDate } from '@/lib/format';
 import {
@@ -34,13 +39,6 @@ import type { SellerDashboard, SalesReport, SalesReportSeries, OrderStatus } fro
 
 const CHART_COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd'];
 
-const SELLER_STATUS: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
-  APPROVED: { label: 'تأیید شده', variant: 'success' },
-  PENDING: { label: 'در انتظار تأیید', variant: 'warning' },
-  REJECTED: { label: 'رد شده', variant: 'destructive' },
-  SUSPENDED: { label: 'تعلیق‌شده', variant: 'destructive' },
-};
-
 const ORDER_STATUS: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
   PAID: { label: 'پرداخت شد', variant: 'success' },
   PROCESSING: { label: 'در حال آماده‌سازی', variant: 'info' },
@@ -52,6 +50,79 @@ const ORDER_STATUS: Record<string, { label: string; variant: BadgeProps['variant
 };
 
 export default function SellerDashboardPage() {
+  const { seller, loading: sellerLoading, notRegistered, refresh } = useSeller();
+
+  if (sellerLoading) return <PageSpinner />;
+  if (notRegistered) return <SellerRegisterForm onRegistered={refresh} />;
+  if (!seller) return null;
+
+  if (seller.status !== 'APPROVED') {
+    return <PendingStatusCard status={seller.status} shopName={seller.shopName} rejectReason={seller.rejectReason} />;
+  }
+
+  return <ApprovedDashboard shopName={seller.shopName} />;
+}
+
+function PendingStatusCard({
+  status,
+  shopName,
+  rejectReason,
+}: {
+  status: string;
+  shopName: string;
+  rejectReason: string | null;
+}) {
+  const config = {
+    PENDING: {
+      icon: Clock,
+      tone: 'warning' as const,
+      title: 'درخواست شما در حال بررسی است',
+      description: 'تیم پت‌شاپ درخواست فروشندگی شما را بررسی می‌کند. معمولاً این کار ۱ تا ۲ روز کاری زمان می‌برد.',
+    },
+    REJECTED: {
+      icon: XCircle,
+      tone: 'destructive' as const,
+      title: 'درخواست فروشندگی رد شد',
+      description: rejectReason ? `دلیل: ${rejectReason}` : 'برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.',
+    },
+    SUSPENDED: {
+      icon: Ban,
+      tone: 'destructive' as const,
+      title: 'فروشگاه شما تعلیق شده است',
+      description: 'محصولات شما موقتاً غیرفعال شده‌اند. برای رفع تعلیق با پشتیبانی تماس بگیرید.',
+    },
+  }[status] ?? {
+    icon: AlertCircle,
+    tone: 'outline' as const,
+    title: 'وضعیت نامشخص',
+    description: '',
+  };
+
+  const Icon = config.icon;
+
+  return (
+    <div className="mx-auto max-w-lg py-10 text-center">
+      <span
+        className={
+          'mx-auto flex h-16 w-16 items-center justify-center rounded-full ' +
+          (config.tone === 'warning' ? 'bg-warning-bg text-warning' : 'bg-destructive-bg text-destructive')
+        }
+      >
+        <Icon className="h-8 w-8" />
+      </span>
+      <h1 className="mt-4 text-xl font-extrabold">{config.title}</h1>
+      <p className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+        <Store className="h-4 w-4" /> {shopName}
+      </p>
+      {config.description && <p className="mt-3 text-sm leading-7 text-muted-foreground">{config.description}</p>}
+      <Link href="/products" className="mt-6 inline-block">
+        <Button variant="outline">مشاهده فروشگاه به‌عنوان خریدار</Button>
+      </Link>
+    </div>
+  );
+}
+
+function ApprovedDashboard({ shopName }: { shopName: string }) {
   const [dashboard, setDashboard] = useState<SellerDashboard | null>(null);
   const [report, setReport] = useState<SalesReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,24 +164,18 @@ export default function SellerDashboardPage() {
     );
   }
 
-  const { seller, stats } = dashboard;
+  const { stats } = dashboard;
   const chartData: SalesReportSeries[] = report?.series ?? [];
   const totalRevenue = chartData.reduce((s, d) => s + d.revenue, 0);
-  const statusInfo = SELLER_STATUS[seller.status] ?? { label: seller.status, variant: 'outline' as const };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-extrabold sm:text-2xl">
-            <Store className="h-5 w-5 text-primary" /> {seller.shopName}
+            <Store className="h-5 w-5 text-primary" /> {shopName}
           </h1>
-          <div className="mt-1.5 flex items-center gap-2">
-            <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-            {seller.status === 'REJECTED' && seller.rejectReason && (
-              <span className="text-xs text-muted-foreground">دلیل: {seller.rejectReason}</span>
-            )}
-          </div>
+          <Badge variant="success" className="mt-1.5">تأیید شده</Badge>
         </div>
         <Link href="/seller/products/new">
           <Button className="gap-1.5">

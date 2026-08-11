@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PageSpinner } from '@/components/ui/page-spinner';
+import { ProductImagesField } from '@/components/product-images-field';
 import {
   Select,
   SelectContent,
@@ -18,11 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Field } from '@/components/ui/field';
 import { api, errorMessage } from '@/lib/api';
 import { toast } from '@/lib/toast-store';
 import type { Category, ProductCard, ProductDetail } from '@/lib/types';
-import { Field } from '../field';
-import { ImagesUrlsInput } from '../images-urls-input';
 
 const editSchema = z.object({
   title: z.string().min(3, 'عنوان حداقل ۳ کاراکتر باشد').max(200),
@@ -70,7 +70,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setLoadError('');
     try {
       const [prod, cats] = await Promise.all([
-        api.get<ProductDetail>(`/products/${resolved.id}`),
+        // /mine/:id (not the public :slug lookup) so drafts/inactive listings
+        // the seller owns are still editable, not just live ACTIVE ones
+        api.get<ProductDetail>(`/products/mine/${resolved.id}`),
         api.get<Category[]>('/categories'),
       ]);
       setProduct(prod.data);
@@ -196,8 +198,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               </Field>
             </div>
 
-            <Field label="تصاویر (آدرس‌ها، حداکثر ۵ تا)">
-              <ImagesUrlsInput {...form.register('images')} value={form.watch('images') ?? ''} />
+            <Field label="تصاویر محصول">
+              <ProductImagesField value={form.watch('images') ?? ''} onChange={(v) => form.setValue('images', v)} />
             </Field>
 
             <div className="flex gap-2 pt-1">

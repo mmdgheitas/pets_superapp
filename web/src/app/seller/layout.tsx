@@ -3,7 +3,8 @@
 import { LayoutDashboard, Package } from 'lucide-react';
 import { DashboardShell, type DashboardNavItem } from '@/components/dashboard-shell';
 import { PageSpinner } from '@/components/ui/page-spinner';
-import { useRoleGuard } from '@/lib/use-role-guard';
+import { useAuthGate } from '@/lib/use-auth-gate';
+import { SellerProvider } from '@/lib/seller-context';
 
 const NAV_ITEMS: DashboardNavItem[] = [
   { href: '/seller', label: 'داشبورد', icon: LayoutDashboard, exact: true },
@@ -11,13 +12,15 @@ const NAV_ITEMS: DashboardNavItem[] = [
 ];
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
-  const { ready } = useRoleGuard('SELLER');
+  const { ready } = useAuthGate();
 
   if (!ready) return <PageSpinner />;
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <DashboardShell navItems={NAV_ITEMS}>{children}</DashboardShell>
-    </div>
+    <SellerProvider>
+      <div className="mx-auto max-w-6xl">
+        <DashboardShell navItems={NAV_ITEMS}>{children}</DashboardShell>
+      </div>
+    </SellerProvider>
   );
 }

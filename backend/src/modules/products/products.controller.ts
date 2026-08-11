@@ -47,6 +47,18 @@ export class ProductsController {
     return this.products.sellerProducts(userId);
   }
 
+  @Get('mine/:id')
+  @Roles(Role.SELLER, Role.ADMIN)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '[فروشنده] جزئیات یکی از محصولات من برای ویرایش (صرف‌نظر از وضعیت)' })
+  mineById(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: Role,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.products.findByIdForOwner(userId, role, id);
+  }
+
   @Public()
   @Get(':slug')
   @ApiOperation({ summary: 'جزئیات محصول (عمومی)' })
@@ -60,12 +72,6 @@ export class ProductsController {
   @ApiOperation({ summary: '[فروشنده] ایجاد محصول' })
   create(@CurrentUser('id') userId: string, @Body() dto: CreateProductDto) {
     return this.products.create(userId, dto);
-  }
-
-  @Get(':id')
-  findOne(@CurrentUser('id') userId: string, @Param('id', ParseUUIDPipe) id: string) {
-    console.log(`Fetching product with ID: ${id} for user: ${userId}`);
-    return this.products.findBySlug(id);
   }
 
   @Patch(':id')
