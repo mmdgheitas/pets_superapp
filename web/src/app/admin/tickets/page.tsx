@@ -1,11 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
-import { MessageCircle, Reply, Check, Clock, XCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Reply, Check, Clock, XCircle, MessageCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
+import { PageSpinner } from '@/components/ui/page-spinner';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Pagination } from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
@@ -14,65 +17,72 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { api, errorMessage } from '@/lib/api';
-import { useAuthStore } from '@/lib/auth-store';
-import { toPersianDigits, formatDate } from '@/lib/format';
+import { formatDate } from '@/lib/format';
+import { toast } from '@/lib/toast-store';
 import type { SupportTicket, Paginated } from '@/lib/types';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'همه وضعیت‌ها' },
   { value: 'OPEN', label: 'باز' },
-  { value: 'IN_PROGRESS', label: 'در progess' },
+  { value: 'IN_PROGRESS', label: 'در حال بررسی' },
   { value: 'RESOLVED', label: 'پاسخ‌داده‌شده' },
   { value: 'CLOSED', label: 'بسته' },
 ];
 
-const STATUS_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
-  OPEN: MessageCircle,
-  IN_PROGRESS: Clock,
-  RESOLVED: Check,
-  CLOSED: XCircle,
+const STATUS_INFO: Record<string, { label: string; variant: BadgeProps['variant']; icon: React.ComponentType<{ className?: string }> }> = {
+  OPEN: { label: 'باز', variant: 'destructive', icon: MessageCircle },
+  IN_PROGRESS: { label: 'در حال بررسی', variant: 'info', icon: Clock },
+  RESOLVED: { label: 'پاسخ‌داده‌شده', variant: 'success', icon: Check },
+  CLOSED: { label: 'بسته', variant: 'outline', icon: XCircle },
 };
 
-const STATUS_COLOR: Record<string, string> = {
-  OPEN: 'bg-red-100 text-red-800',
-  IN_PROGRESS: 'bg-blue-100 text-blue-800',
-  RESOLVED: 'bg-green-100 text-green-800',
-  CLOSED: 'bg-gray-200 text-gray-700',
-};
-
-function TicketItem({ ticket, onReply }: { ticket: SupportTicket; onReply: (id: string) => void }) {
-  const Icon = STATUS_ICON[ticket.status] ?? MessageCircle;
-  const color = STATUS_COLOR[ticket.status] ?? 'bg-gray-100 text-gray-800';
+function TicketItem({
+  ticket,
+  replying,
+  replyText,
+  sending,
+  onStartReply,
+  onCancelReply,
+  onChangeReply,
+  onSubmitReply,
+}: {
+  ticket: SupportTicket;
+  replying: boolean;
+  replyText: string;
+  sending: boolean;
+  onStartReply: () => void;
+  onCancelReply: () => void;
+  onChangeReply: (v: string) => void;
+  onSubmitReply: () => void;
+}) {
+  const info = STATUS_INFO[ticket.status] ?? { label: ticket.status, variant: 'outline' as const, icon: MessageCircle };
+  const Icon = info.icon;
 
   return (
-    <Card className="transition-all hover:shadow-sm">
+    <Card className="transition-shadow hover:shadow-card">
       <CardContent className="p-4">
         <div className="mb-2 flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
-                {ticket.status === 'OPEN' ? 'باز' : ticket.status === 'IN_PROGRESS' ? 'در progess' : ticket.status === 'RESOLVED' ? 'پاسخ‌داده‌شده' : 'بسته'}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                توسط: {ticket.user.fullName ?? ticket.user.phone}
-              </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={info.variant} className="gap-1"><Icon className="h-3 w-3" /> {info.label}</Badge>
+              <span className="text-xs text-muted-foreground">توسط: {ticket.user.fullName ?? ticket.user.phone}</span>
             </div>
-            <h3 className="mt-1 font-medium">{ticket.subject}</h3>
+            <h3 className="mt-1 font-bold">{ticket.subject}</h3>
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {ticket.status === 'OPEN' && (
-              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => onReply(ticket.id)}>
-                <Reply className="mr-1 h-3.5 w-3.5" /> پاسخ
+          <div className="flex shrink-0 items-center gap-1">
+            {(ticket.status === 'OPEN' || ticket.status === 'IN_PROGRESS') && !replying && (
+              <Button size="sm" onClick={onStartReply} className="gap-1">
+                <Reply className="h-3.5 w-3.5" /> پاسخ
               </Button>
             )}
-            {ticket.status === 'RESOLVED' && (
-              <Button size="sm" variant="ghost" className="text-green-700" onClick={() => onReply(ticket.id)}>
-                <Reply className="mr-1 h-3.5 w-3.5" /> پاسخ مجدد
+            {ticket.status === 'RESOLVED' && !replying && (
+              <Button size="sm" variant="ghost" onClick={onStartReply} className="gap-1">
+                <Reply className="h-3.5 w-3.5" /> پاسخ مجدد
               </Button>
             )}
           </div>
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-3">{ticket.message}</p>
+        <p className="line-clamp-3 text-sm text-muted-foreground">{ticket.message}</p>
         {ticket.adminReply && (
           <div className="mt-3 rounded-lg bg-primary/5 p-3">
             <p className="text-xs text-muted-foreground">پاسخ پشتیبانی:</p>
@@ -80,31 +90,42 @@ function TicketItem({ ticket, onReply }: { ticket: SupportTicket; onReply: (id: 
           </div>
         )}
         <p className="mt-2 text-xs text-muted-foreground">
-          ایجاد‌شده: {formatDate(ticket.createdAt)}
+          ایجادشده: {formatDate(ticket.createdAt)}
           {ticket.updatedAt !== ticket.createdAt && ` · به‌روزرسانی: ${formatDate(ticket.updatedAt)}`}
         </p>
+
+        {/* Reply form appears directly under the ticket it belongs to (Gestalt
+            proximity) instead of floating at the top of a long list */}
+        {replying && (
+          <div className="mt-3 space-y-2 border-t pt-3">
+            <Textarea autoFocus placeholder="متن پاسخ خود را بنویسید…" value={replyText} onChange={(e) => onChangeReply(e.target.value)} rows={3} />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={onSubmitReply} loading={sending} disabled={!replyText.trim()} className="flex-1">
+                ارسال پاسخ
+              </Button>
+              <Button size="sm" variant="outline" onClick={onCancelReply}>
+                انصراف
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
 
 export default function AdminTicketsPage() {
-  const router = useRouter();
-  const { accessToken } = useAuthStore();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
-  const [replyError, setReplyError] = useState('');
 
   const loadTickets = useCallback(async () => {
-    if (!accessToken) return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -113,32 +134,28 @@ export default function AdminTicketsPage() {
       setTickets(data.data);
       setTotal(data.meta.total);
     } catch (e) {
-      setError(errorMessage(e, 'بارگذاری تیکت‌ها'));
+      toast({ title: 'بارگذاری تیکت‌ها ناموفق بود', description: errorMessage(e), variant: 'destructive' });
       setTickets([]);
     } finally {
       setLoading(false);
     }
-  }, [accessToken, page, statusFilter, limit]);
+  }, [page, statusFilter, limit]);
 
   useEffect(() => {
-    if (!accessToken) { router.replace('/login'); return; }
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser) return; // wait for auth hydration
-    if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadTickets();
-  }, [accessToken, router, loadTickets]);
+  }, [loadTickets]);
 
   const reply = async () => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim() || !replyingTo) return;
     setSending(true);
-    setReplyError('');
     try {
       await api.post(`/admin/tickets/${replyingTo}/reply`, { reply: replyText.trim() });
       setReplyingTo(null);
       setReplyText('');
+      toast({ title: 'پاسخ ارسال شد', variant: 'success' });
       loadTickets();
     } catch (e) {
-      setReplyError(errorMessage(e, 'ارسال پاسخ ناموفق بود'));
+      toast({ title: 'ارسال پاسخ ناموفق بود', description: errorMessage(e), variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -147,113 +164,46 @@ export default function AdminTicketsPage() {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold">تیکت‌های پشتیبانی</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          پاسخ به تیکت‌های کاربران و مدیریت وضعیت آن‌ها
-        </p>
+        <h1 className="text-xl font-extrabold sm:text-2xl">تیکت‌های پشتیبانی</h1>
+        <p className="mt-1 text-sm text-muted-foreground">پاسخ به تیکت‌های کاربران و مدیریت وضعیت آن‌ها</p>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="flex flex-wrap items-center gap-3 p-4">
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => { setStatusFilter(v); setPage(1); }}
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+        <SelectTrigger className="w-[170px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {STATUS_OPTIONS.map((o) => (
+            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      {/* Reply form */}
-      {replyingTo && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="text-base">پاسخ به تیکت</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Textarea
-              placeholder="متن پاسخ خود را بنویسید…"
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              rows={4}
+      {loading ? (
+        <PageSpinner />
+      ) : tickets.length === 0 ? (
+        <EmptyState icon={<MessageCircle className="mx-auto h-12 w-12 text-muted-foreground" />} title="تیکتی یافت نشد" />
+      ) : (
+        <div className="space-y-3">
+          {tickets.map((t) => (
+            <TicketItem
+              key={t.id}
+              ticket={t}
+              replying={replyingTo === t.id}
+              replyText={replyingTo === t.id ? replyText : ''}
+              sending={sending}
+              onStartReply={() => { setReplyingTo(t.id); setReplyText(''); }}
+              onCancelReply={() => setReplyingTo(null)}
+              onChangeReply={setReplyText}
+              onSubmitReply={reply}
             />
-            {replyError && <p className="text-sm text-destructive">{replyError}</p>}
-            <div className="flex gap-2">
-              <Button onClick={reply} disabled={sending || !replyText.trim()} className="flex-1">
-                {sending ? 'در حال ارسال…' : 'ارسال پاسخ'}
-              </Button>
-              <Button variant="outline" onClick={() => { setReplyingTo(null); setReplyText(''); }}>
-                انصراف
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Ticket list */}
-      <div>
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
-        ) : error ? (
-          <Card>
-            <CardContent className="py-8 text-center text-sm text-destructive">{error}</CardContent>
-          </Card>
-        ) : tickets.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-sm text-muted-foreground">
-              تیکتی یافت نشد.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {tickets.map((t) => (
-              <TicketItem key={t.id} ticket={t} onReply={(id) => { setReplyingTo(id); setReplyText(''); }} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            نشان‌دهنده {total} تیکت
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              قبلی
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              صفحه {toPersianDigits(page)} از {toPersianDigits(totalPages)}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              بعدی
-            </Button>
-          </div>
+          ))}
         </div>
       )}
+
+      <Pagination page={page} totalPages={totalPages} total={total} itemLabel="تیکت" onChange={setPage} />
     </div>
   );
 }

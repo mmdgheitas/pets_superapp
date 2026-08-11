@@ -1,23 +1,33 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
   Plus,
-  X,
   Image as ImageIcon,
   ExternalLink,
   Trash2,
   Eye,
   EyeOff,
   Upload,
+  Pencil,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { PageSpinner } from '@/components/ui/page-spinner';
+import { EmptyState } from '@/components/ui/empty-state';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { api, errorMessage } from '@/lib/api';
-import { useAuthStore } from '@/lib/auth-store';
-import { toPersianDigits } from '@/lib/format';
+import { toPersianDigits, formatDate } from '@/lib/format';
+import { toast } from '@/lib/toast-store';
 import type { BannerItem } from '@/lib/types';
 
 const POSITION_OPTIONS = [
@@ -27,39 +37,27 @@ const POSITION_OPTIONS = [
   { value: 'category', label: 'بین دسته‌بندی‌ها' },
 ];
 
+const emptyForm = { title: '', imageUrl: '', linkUrl: '', position: 'home_top', sortOrder: 0, isActive: true };
+
 export default function AdminBannersPage() {
-  const router = useRouter();
-  const { accessToken } = useAuthStore();
   const [banners, setBanners] = useState<BannerItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({
-    title: '',
-    imageUrl: '',
-    linkUrl: '',
-    position: 'home_top',
-    sortOrder: 0,
-    isActive: true,
-  });
+  const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!accessToken) { router.replace('/login'); return; }
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser) return; // wait for auth hydration
-    if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadBanners();
-  }, [accessToken, router]);
+  }, []);
 
   const loadBanners = async () => {
+    setLoading(true);
     try {
       const { data } = await api.get<BannerItem[]>('/admin/banners');
       setBanners(data);
-    } catch {
-      setError('لغو شده');
+    } catch (e) {
+      toast({ title: 'بارگذاری بنرها ناموفق بود', description: errorMessage(e), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -67,7 +65,6 @@ export default function AdminBannersPage() {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaveError('');
     setSaving(true);
     try {
       const dto = {
@@ -78,21 +75,16 @@ export default function AdminBannersPage() {
         sortOrder: form.sortOrder,
         isActive: form.isActive,
       };
-      let res: { data: BannerItem };
       if (editingId) {
-        res = await api.patch<BannerItem>(`/admin/banners/${editingId}`, dto);
+        await api.patch<BannerItem>(`/admin/banners/${editingId}`, dto);
       } else {
-        res = await api.post<BannerItem>('/admin/banners', dto);
+        await api.post<BannerItem>('/admin/banners', dto);
       }
-      setBanners((prev) =>
-        editingId
-          ? prev.map((b) => (b.id === editingId ? res.data : b))
-          : [...prev, res.data]
-      );
+      toast({ title: editingId ? 'بنر بروزرسانی شد' : 'بنر ایجاد شد', variant: 'success' });
       resetForm();
       loadBanners();
     } catch (e) {
-      setSaveError(errorMessage(e, 'ذخیره ناموفق بود'));
+      toast({ title: 'ذخیره ناموفق بود', description: errorMessage(e), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -101,21 +93,20 @@ export default function AdminBannersPage() {
   const toggleActive = async (banner: BannerItem) => {
     try {
       await api.patch<BannerItem>(`/admin/banners/${banner.id}`, { isActive: !banner.isActive });
-      setBanners((prev) =>
-        prev.map((b) => (b.id === banner.id ? { ...b, isActive: !b.isActive } : b))
-      );
-    } catch {
-      /* ignore */
+      setBanners((prev) => prev.map((b) => (b.id === banner.id ? { ...b, isActive: !b.isActive } : b)));
+    } catch (e) {
+      toast({ title: 'عملیات ناموفق بود', description: errorMessage(e), variant: 'destructive' });
     }
   };
 
   const deleteBanner = async (id: string) => {
-    if (!confirm('بنر حذف شود؟')) return;
+    if (!window.confirm('بنر حذف شود؟')) return;
     try {
       await api.delete(`/admin/banners/${id}`);
       setBanners((prev) => prev.filter((b) => b.id !== id));
-    } catch {
-      setError('حذف ناموفق بود');
+      toast({ title: 'بنر حذف شد' });
+    } catch (e) {
+      toast({ title: 'حذف ناموفق بود', description: errorMessage(e), variant: 'destructive' });
     }
   };
 
@@ -130,115 +121,77 @@ export default function AdminBannersPage() {
     });
     setEditingId(banner.id);
     setShowForm(true);
-    setSaveError('');
   };
 
   const resetForm = () => {
-    setForm({ title: '', imageUrl: '', linkUrl: '', position: 'home_top', sortOrder: 0, isActive: true });
+    setForm(emptyForm);
     setEditingId(null);
     setShowForm(false);
-    setSaveError('');
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
+  if (loading) return <PageSpinner />;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">مدیریت بنرها</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          بنرهای نمایش‌داده‌شده در صفحه اصلی و صفحه محصولات
-        </p>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-extrabold sm:text-2xl">مدیریت بنرها</h1>
+          <p className="mt-1 text-sm text-muted-foreground">بنرهای نمایش‌داده‌شده در صفحه اصلی و صفحه محصولات</p>
+        </div>
+        {!showForm && (
+          <Button onClick={() => { resetForm(); setShowForm(true); }} className="gap-1.5">
+            <Plus className="h-4 w-4" /> بنر جدید
+          </Button>
+        )}
       </div>
 
-      <Button onClick={() => { resetForm(); setShowForm(true); }}>
-        <Plus className="mr-2 h-4 w-4" /> بنر جدید
-      </Button>
-
-      {/* Form */}
       {showForm && (
-        <Card>
+        <Card className="animate-fade-up">
           <CardHeader>
-            <CardTitle>{editingId ? 'ویرایش بنر' : 'بنر جدید'}</CardTitle>
+            <CardTitle className="text-base">{editingId ? 'ویرایش بنر' : 'بنر جدید'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={save} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-sm font-medium">عنوان بنر</label>
-                  <Input
-                    required
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    placeholder="تخفیف ۲۰٪ در فروشگاه"
-                  />
+                  <Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="تخفیف ۲۰٪ در فروشگاه" />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">وضعیت</label>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={form.position}
-                    onChange={(e) => setForm({ ...form, position: e.target.value })}
-                  >
-                    {POSITION_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">موقعیت نمایش</label>
+                  <Select value={form.position} onValueChange={(v) => setForm({ ...form, position: v })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {POSITION_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-sm font-medium">آدرس تصویر</label>
-                <Input
-                  required
-                  value={form.imageUrl}
-                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                  placeholder="https://.../banner.jpg"
-                />
-                <p className="text-xs text-muted-foreground">
-                  آدرس مستقیم تصویر (از /upload/image یا CDN)
-                </p>
+                <Input required dir="ltr" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://.../banner.jpg" />
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">
-                  لینک هدف (اختیاری)
-                </label>
-                <Input
-                  value={form.linkUrl}
-                  onChange={(e) => setForm({ ...form, linkUrl: e.target.value })}
-                  placeholder="https://petshop.ir/products"
-                />
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">لینک هدف (اختیاری)</label>
+                <Input dir="ltr" value={form.linkUrl} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} placeholder="https://petshop.ir/products" />
               </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.isActive}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                    className="h-4 w-4 rounded border-input"
-                  />
+              <div className="flex flex-wrap items-center gap-4">
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="h-4 w-4 rounded border-input accent-primary" />
                   فعال باشد
                 </label>
-                <div className="flex items-center gap-1">
-                  <label className="text-sm text-muted-foreground">ترتیب:</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.sortOrder}
-                    onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value, 10) || 0 })}
-                    className="w-20"
-                  />
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-muted-foreground">ترتیب نمایش:</label>
+                  <Input type="number" min={0} value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value, 10) || 0 })} className="w-20" />
                 </div>
               </div>
-              {saveError && <p className="text-sm text-destructive">{saveError}</p>}
-              <div className="flex gap-2">
-                <Button type="submit" disabled={saving} className="flex-1">
-                  {saving ? 'ذخیره‌سازی…' : editingId ? 'بروزرسانی' : 'ایجاد بنر'}
+              <div className="flex gap-2 pt-1">
+                <Button type="submit" loading={saving} className="flex-1">
+                  {editingId ? 'بروزرسانی' : 'ایجاد بنر'}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
                   انصراف
@@ -249,107 +202,59 @@ export default function AdminBannersPage() {
         </Card>
       )}
 
-      {/* List */}
-      <div>
-        <h2 className="mb-3 text-lg font-bold">لیست بنرها</h2>
-        {error ? (
-          <p className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-            {error}
-          </p>
-        ) : banners.length === 0 ? (
-          <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            هنوز بنری ثبت نشده است.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {banners.map((b) => (
-              <Card key={b.id} className="flex items-start gap-4">
-                <div className="flex h-16 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+      {banners.length === 0 ? (
+        <EmptyState icon={<ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />} title="هنوز بنری ثبت نشده است" />
+      ) : (
+        <div className="space-y-3">
+          {banners.map((b) => (
+            <Card key={b.id}>
+              <CardContent className="flex flex-wrap items-start gap-4 p-4">
+                <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
                   {b.imageUrl ? (
-                    <img
-                      src={b.imageUrl}
-                      alt={b.title}
-                      className="h-full w-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
+                    <Image src={b.imageUrl} alt={b.title} fill className="object-cover" unoptimized />
                   ) : (
-                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex h-full items-center justify-center"><ImageIcon className="h-6 w-6 text-muted-foreground" /></div>
                   )}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium truncate">{b.title}</h3>
-                    {b.isActive ? (
-                      <span className="flex h-5 flex-shrink-0 items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
-                        فعال
-                      </span>
-                    ) : (
-                      <span className="flex h-5 flex-shrink-0 items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
-                        غیرفعال
-                      </span>
-                    )}
-                    {b.linkUrl && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <ExternalLink className="h-3 w-3" />
-                        {b.linkUrl}
-                      </span>
-                    )}
+                <div className="min-w-[180px] flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="truncate font-bold">{b.title}</h3>
+                    <Badge variant={b.isActive ? 'success' : 'outline'}>{b.isActive ? 'فعال' : 'غیرفعال'}</Badge>
                   </div>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span> موقعیت: {POSITION_OPTIONS.find((o) => o.value === b.position)?.label ?? b.position}</span>
-                    <span>· ترتیب: {toPersianDigits(b.sortOrder)}</span>
-                    {b.startsAt && (
-                      <>
-                        <span>· از: {toPersianDigits(new Date(b.startsAt).toLocaleDateString('fa-IR'))}</span>
-                      </>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                    <span>موقعیت: {POSITION_OPTIONS.find((o) => o.value === b.position)?.label ?? b.position}</span>
+                    <span>ترتیب: {toPersianDigits(b.sortOrder)}</span>
+                    {b.linkUrl && (
+                      <span className="flex items-center gap-1 truncate">
+                        <ExternalLink className="h-3 w-3 shrink-0" /> {b.linkUrl}
+                      </span>
                     )}
-                    {b.endsAt && (
-                      <>
-                        <span>· تا: {toPersianDigits(new Date(b.endsAt).toLocaleDateString('fa-IR'))}</span>
-                      </>
-                    )}
+                    {b.startsAt && <span>از: {formatDate(b.startsAt)}</span>}
+                    {b.endsAt && <span>تا: {formatDate(b.endsAt)}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title={b.isActive ? 'غیرفعال کردن' : 'فعال کردن'}
-                    onClick={() => toggleActive(b)}
-                  >
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" size="icon-sm" title={b.isActive ? 'غیرفعال کردن' : 'فعال کردن'} onClick={() => toggleActive(b)}>
                     {b.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="ویرایش"
-                    onClick={() => startEdit(b)}
-                  >
-                    <ImageIcon className="h-4 w-4" />
+                  <Button variant="ghost" size="icon-sm" title="ویرایش" onClick={() => startEdit(b)}>
+                    <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="حذف"
-                    onClick={() => deleteBanner(b.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
+                  <Button variant="ghost" size="icon-sm" title="حذف" onClick={() => deleteBanner(b.id)} className="text-destructive hover:bg-destructive-bg hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      {/* Upload hint */}
       <Card className="border-dashed">
         <CardContent className="flex items-center gap-3 p-4 text-sm text-muted-foreground">
-          <Upload className="h-5 w-5" />
+          <Upload className="h-5 w-5 shrink-0" />
           <span>
-            برای دریافت آدرس تصویر، ابتدا از مسیر /upload/image آپلود کنید و آدرس برگشتی را در فیلد
-            {' '}
+            برای دریافت آدرس تصویر، ابتدا از مسیر /upload/image آپلود کنید و آدرس برگشتی را در فیلد{' '}
             <strong className="text-foreground">آدرس تصویر</strong> کپی نمایید.
           </span>
         </CardContent>

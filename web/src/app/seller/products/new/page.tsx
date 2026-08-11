@@ -1,14 +1,17 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Upload, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowRight, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { PageSpinner } from '@/components/ui/page-spinner';
 import {
   Select,
   SelectContent,
@@ -17,9 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { api, errorMessage } from '@/lib/api';
-import { useAuthStore } from '@/lib/auth-store';
-import { toPersianDigits, formatToman } from '@/lib/format';
+import { toast } from '@/lib/toast-store';
 import type { Category, ProductCard } from '@/lib/types';
+import { Field } from '../field';
+import { ImagesUrlsInput } from '../images-urls-input';
 
 const createSchema = z.object({
   title: z.string().min(3, 'عنوان حداقل ۳ کاراکتر باشد').max(200),
@@ -42,11 +46,9 @@ type FormData = z.infer<typeof createSchema>;
 
 export default function NewProductPage() {
   const router = useRouter();
-  const { accessToken } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   const form = useForm<FormData>({
     resolver: zodResolver(createSchema),
@@ -54,26 +56,14 @@ export default function NewProductPage() {
   });
 
   useEffect(() => {
-    if (!accessToken) { router.replace('/login'); return; }
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser) return;
-    if (currentUser.role !== 'SELLER') { router.replace('/'); return; }
-    loadData();
-  }, [accessToken, router]);
-
-  const loadData = async () => {
-    try {
-      const [cats] = await Promise.all([api.get<Category[]>('/categories')]);
-      setCategories(cats.data ?? []);
-    } catch {
-      /* ignore */
-    } finally {
-      setLoading(false);
-    }
-  };
+    api
+      .get<Category[]>('/categories')
+      .then((res) => setCategories(res.data ?? []))
+      .catch(() => undefined)
+      .finally(() => setLoading(false));
+  }, []);
 
   const onSubmit = async (data: FormData) => {
-    setError('');
     setSubmitting(true);
     try {
       const payload = {
@@ -87,26 +77,21 @@ export default function NewProductPage() {
         images: data.images ? data.images.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
       };
       const { data: product } = await api.post<ProductCard>('/products', payload);
+      toast({ title: 'محصول ثبت شد', variant: 'success' });
       router.push(`/seller/products/${product.id}`);
     } catch (e) {
-      setError(errorMessage(e, 'ثبت محصول ناموفق بود'));
+      toast({ title: 'ثبت محصول ناموفق بود', description: errorMessage(e), variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (loading) return <PageSpinner />;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Button variant="link" onClick={() => router.back()} className="mb-2">
-        <ArrowLeft className="mr-1 h-4 w-4" /> بازگشت
+    <div className="mx-auto max-w-2xl space-y-4">
+      <Button variant="ghost" onClick={() => router.back()} className="gap-1.5 -ms-3">
+        <ArrowRight className="h-4 w-4" /> بازگشت
       </Button>
 
       <Card>
@@ -115,21 +100,12 @@ export default function NewProductPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">عنوان *</label>
-              <Input
-                {...form.register('title')}
-                placeholder="غذای خشک سگ رویال کنین ۱۵ کیلویی"
-                required
-              />
-              {form.formState.errors.title && (
-                <p className="text-xs text-destructive">{form.formState.errors.title.message}</p>
-              )}
-            </div>
+            <Field label="عنوان" required error={form.formState.errors.title?.message}>
+              <Input {...form.register('title')} placeholder="غذای خشک سگ رویال کنین ۱۵ کیلویی" />
+            </Field>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium">دسته‌بندی *</label>
-              <Select value={form.watch('categoryId')} onValueChange={(v) => form.setValue('categoryId', v)}>
+            <Field label="دسته‌بندی" required error={form.formState.errors.categoryId?.message}>
+              <Select value={form.watch('categoryId')} onValueChange={(v) => form.setValue('categoryId', v, { shouldValidate: true })}>
                 <SelectTrigger>
                   <SelectValue placeholder="دسته‌بندی را انتخاب کنید" />
                 </SelectTrigger>
@@ -141,105 +117,48 @@ export default function NewProductPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {form.formState.errors.categoryId && (
-                <p className="text-xs text-destructive">{form.formState.errors.categoryId.message}</p>
-              )}
-            </div>
+            </Field>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium">توضیحات *</label>
-              <textarea
-                {...form.register('description')}
-                placeholder="توضیحات کامل محصول، ویژگی‌ها، نکات بهداشتی و…"
-                rows={4}
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                required
-              />
-              {form.formState.errors.description && (
-                <p className="text-xs text-destructive">{form.formState.errors.description.message}</p>
-              )}
+            <Field label="توضیحات" required error={form.formState.errors.description?.message}>
+              <Textarea {...form.register('description')} placeholder="توضیحات کامل محصول، ویژگی‌ها، نکات بهداشتی و…" rows={4} />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="قیمت (ریال)" required error={form.formState.errors.price?.message}>
+                <Input {...form.register('price')} placeholder="۲۸۵۰۰۰۰" inputMode="numeric" dir="ltr" />
+              </Field>
+              <Field label="قیمت قبل از تخفیف (ریال)">
+                <Input {...form.register('compareAtPrice')} placeholder="۳۴۰۰۰۰۰" inputMode="numeric" dir="ltr" />
+              </Field>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">قیمت (ریال) *</label>
-                <Input
-                  {...form.register('price')}
-                  placeholder="2850000"
-                  inputMode="numeric"
-                  required
-                />
-                {form.formState.errors.price && (
-                  <p className="text-xs text-destructive">{form.formState.errors.price.message}</p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">قیمت پیشنهادی (ریال)</label>
-                <Input
-                  {...form.register('compareAtPrice')}
-                  placeholder="3400000"
-                  inputMode="numeric"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">موجودی *</label>
-                <Input
-                  {...form.register('stock')}
-                  placeholder="۱۲"
-                  inputMode="numeric"
-                  required
-                />
-                {form.formState.errors.stock && (
-                  <p className="text-xs text-destructive">{form.formState.errors.stock.message}</p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">وضعیت</label>
+              <Field label="موجودی" required error={form.formState.errors.stock?.message}>
+                <Input {...form.register('stock')} placeholder="۱۲" inputMode="numeric" dir="ltr" />
+              </Field>
+              <Field label="وضعیت">
                 <Select value={form.watch('status')} onValueChange={(v) => form.setValue('status', v as 'ACTIVE' | 'DRAFT')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ACTIVE">فعال</SelectItem>
-                    <SelectItem value="DRAFT">پیش‌نویس</SelectItem>
+                    <SelectItem value="ACTIVE">فعال (نمایش عمومی)</SelectItem>
+                    <SelectItem value="DRAFT">پیش‌نویس (فقط شما می‌بینید)</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium">تصاویر (آدرس‌ها، کمتر از ۵ تا)</label>
-              <Input
-                {...form.register('images')}
-                placeholder="https://cdn.example.com/1.webp, https://cdn.example.com/2.webp"
-                dir="ltr"
-              />
+            <Field label="تصاویر (آدرس‌ها، حداکثر ۵ تا)">
+              <ImagesUrlsInput {...form.register('images')} value={form.watch('images') ?? ''} />
               <p className="text-xs text-muted-foreground">
-                آدرس‌های مستقیم تصاویر را با ',' از هم جدا کنید. از /upload/images برای آپلود استفاده کنید.
+                آدرس‌های مستقیم تصاویر را با «,» از هم جدا کنید. از /upload/images برای آپلود استفاده کنید.
               </p>
-            </div>
+            </Field>
 
-            {error && (
-              <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Button type="submit" disabled={submitting} className="flex-1">
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ذخیره‌سازی…
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" /> ثبت محصول
-                  </>
-                )}
+            <div className="flex gap-2 pt-1">
+              <Button type="submit" loading={submitting} className="flex-1 gap-1.5">
+                <Upload className="h-4 w-4" /> ثبت محصول
               </Button>
               <Button type="button" variant="outline" onClick={() => router.back()}>
                 انصراف

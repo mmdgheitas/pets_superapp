@@ -1,29 +1,24 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { TrendingUp, DollarSign, Users, Package, Calendar } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, DollarSign, Users, Package, Calendar, RefreshCcw } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { StatCard } from '@/components/ui/stat-card';
+import { PageSpinner } from '@/components/ui/page-spinner';
+import { EmptyState } from '@/components/ui/empty-state';
 import { api, errorMessage } from '@/lib/api';
-import { useAuthStore } from '@/lib/auth-store';
 import { toPersianDigits, formatToman, formatDate } from '@/lib/format';
+import { toast } from '@/lib/toast-store';
 import type { DailyReport } from '@/lib/types';
 
 export default function AdminReportsPage() {
-  const router = useRouter();
-  const { accessToken } = useAuthStore();
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!accessToken) { router.replace('/login'); return; }
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser) return; // wait for auth hydration
-    if (currentUser.role !== 'ADMIN') { router.replace('/'); return; }
     loadReports();
-  }, [accessToken, router]);
+  }, []);
 
   const loadReports = async () => {
     setLoading(true);
@@ -31,145 +26,79 @@ export default function AdminReportsPage() {
       const { data } = await api.get<DailyReport[]>('/admin/reports/daily');
       setReports(data);
     } catch (e) {
-      setError(errorMessage(e, 'بارگذاری گزارش‌ها ناموفق بود'));
+      toast({ title: 'بارگذاری گزارش‌ها ناموفق بود', description: errorMessage(e), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
+  if (loading) return <PageSpinner />;
 
   const totalRevenue = reports.reduce((s, r) => s + Number(r.revenue), 0);
   const totalCommission = reports.reduce((s, r) => s + Number(r.commission), 0);
+  const totalNewUsers = reports.reduce((s, r) => s + r.newUsers, 0);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">گزارش‌های روزانه</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          داده‌های تولیدشده خودکار توسط سیستم (Job زمان‌بندی هر شب)
-        </p>
-      </div>
-
-      {/* Summary */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="flex items-start gap-3 p-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-700">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">گزارش‌های تولیدشده</p>
-              <p className="text-xl font-bold text-primary">{toPersianDigits(reports.length)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-start gap-3 p-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-700">
-              <DollarSign className="h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">ساختار درآمد کل</p>
-              <p className="text-xl font-bold text-primary">{formatToman(totalRevenue)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-start gap-3 p-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-700">
-              <Package className="h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">کمیسیون پلتفرم (کل)</p>
-              <p className="text-xl font-bold text-primary">{formatToman(totalCommission)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-start gap-3 p-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
-              <Users className="h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">کاربران جدید (کل)</p>
-              <p className="text-xl font-bold text-primary">
-                {toPersianDigits(reports.reduce((s, r) => s + r.newUsers, 0))}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {error && (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-          {error}
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-extrabold sm:text-2xl">گزارش‌های روزانه</h1>
+          <p className="mt-1 text-sm text-muted-foreground">داده‌های تولیدشده خودکار توسط سیستم (هر شب ساعت ۰۰:۰۵)</p>
         </div>
-      )}
-
-      {/* Table */}
-      <div>
-        <h2 className="mb-3 text-lg font-bold">جدول گزارش‌های روزانه</h2>
-        {reports.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-sm text-muted-foreground">
-              هنوز گزارشی تولیدشده نیست. سیستم هر شب ساعت ۰۰:۰۵ گزارش روز before را تولید می‌کند.
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/50">
-                      {['تاریخ', 'سفارش‌ها', 'پرداخت شده', 'درآمد (تومان)', 'کمیسیون (تومان)', 'کاربران جدید', 'فروشندگان جدید'].map((h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {reports.map((r) => (
-                      <tr key={r.id} className="hover:bg-muted/30">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">{formatDate(r.date)}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{toPersianDigits(r.ordersCount)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{toPersianDigits(r.paidOrdersCount)}</td>
-                        <td className="px-4 py-3 font-medium text-green-700">{formatToman(r.revenue)}</td>
-                        <td className="px-4 py-3 font-medium text-orange-700">{formatToman(r.commission)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{toPersianDigits(r.newUsers)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{toPersianDigits(r.newSellers)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Refresh button */}
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={loadReports}>
-          <Calendar className="mr-2 h-4 w-4" /> تازه‌سازی
+        <Button variant="outline" onClick={loadReports} className="gap-1.5">
+          <RefreshCcw className="h-4 w-4" /> تازه‌سازی
         </Button>
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={TrendingUp} label="گزارش‌های تولیدشده" value={toPersianDigits(reports.length)} tone="primary" />
+        <StatCard icon={DollarSign} label="درآمد کل" value={formatToman(totalRevenue)} tone="success" />
+        <StatCard icon={Package} label="کمیسیون پلتفرم (کل)" value={formatToman(totalCommission)} tone="warning" />
+        <StatCard icon={Users} label="کاربران جدید (کل)" value={toPersianDigits(totalNewUsers)} tone="info" />
+      </div>
+
+      {reports.length === 0 ? (
+        <EmptyState
+          icon={<Calendar className="mx-auto h-12 w-12 text-muted-foreground" />}
+          title="هنوز گزارشی تولید نشده است"
+          description="سیستم هر شب ساعت ۰۰:۰۵ گزارش روز قبل را تولید می‌کند."
+        />
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    {['تاریخ', 'سفارش‌ها', 'پرداخت‌شده', 'درآمد', 'کمیسیون', 'کاربران جدید', 'فروشندگان جدید'].map((h) => (
+                      <th key={h} className="whitespace-nowrap px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {reports.map((r) => (
+                    <tr key={r.id} className="transition-colors hover:bg-muted/30">
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <span className="flex items-center gap-2 font-medium">
+                          <Calendar className="h-4 w-4 text-muted-foreground" /> {formatDate(r.date)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground num-tabular">{toPersianDigits(r.ordersCount)}</td>
+                      <td className="px-4 py-3 text-muted-foreground num-tabular">{toPersianDigits(r.paidOrdersCount)}</td>
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-success num-tabular">{formatToman(r.revenue)}</td>
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-warning num-tabular">{formatToman(r.commission)}</td>
+                      <td className="px-4 py-3 text-muted-foreground num-tabular">{toPersianDigits(r.newUsers)}</td>
+                      <td className="px-4 py-3 text-muted-foreground num-tabular">{toPersianDigits(r.newSellers)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
