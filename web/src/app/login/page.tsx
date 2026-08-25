@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { OtpInput } from '@/components/ui/otp-input';
+import { OtpCountdownBar } from '@/components/ui/reservation-countdown';
 import { api, errorMessage, USE_MOCK } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { toPersianDigits } from '@/lib/format';
@@ -38,6 +39,7 @@ export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [devCode, setDevCode] = useState<string | undefined>();
   const [countdown, setCountdown] = useState(0);
+  const [otpTtl, setOtpTtl] = useState(120);
   const [verifying, setVerifying] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [otpKey, setOtpKey] = useState(0);
@@ -59,6 +61,7 @@ export default function LoginPage() {
       const { data } = await api.post<OtpRequestResponse>('/auth/otp/request', { phone });
       setPhone(phone);
       setCountdown(data.expiresIn);
+      setOtpTtl(data.expiresIn || 120);
       setDevCode(data.devCode);
       setStep('otp');
       setOtpKey((k) => k + 1);
@@ -156,11 +159,14 @@ export default function LoginPage() {
               {otpError && <p className="text-center text-sm text-destructive">{otpError}</p>}
               {verifying && <p className="text-center text-sm text-muted-foreground">در حال بررسی…</p>}
 
-              <div className="text-center text-sm">
+              <div className="space-y-2 text-center text-sm">
                 {countdown > 0 ? (
-                  <span className="text-muted-foreground num-tabular">
-                    ارسال مجدد کد تا {toPersianDigits(countdown)} ثانیه دیگر
-                  </span>
+                  <>
+                    <OtpCountdownBar remaining={countdown} total={otpTtl} />
+                    <span className="text-muted-foreground num-tabular">
+                      ارسال مجدد کد تا {toPersianDigits(countdown)} ثانیه دیگر
+                    </span>
+                  </>
                 ) : (
                   <Button
                     type="button"

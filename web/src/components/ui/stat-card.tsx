@@ -7,6 +7,7 @@ const TONES = {
   info: 'bg-info-bg text-info',
   warning: 'bg-warning-bg text-warning',
   destructive: 'bg-destructive-bg text-destructive',
+  money: 'bg-money-bg text-money',
 } as const;
 
 /**
@@ -38,7 +39,7 @@ export function StatCard({
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs text-muted-foreground">{label}</p>
-          <p className="text-xl font-extrabold num-tabular">{value}</p>
+          <p className={cn('text-xl font-extrabold num-tabular', tone === 'money' && 'text-money')}>{value}</p>
           {sub && <p className="truncate text-xs text-muted-foreground">{sub}</p>}
         </div>
       </CardContent>

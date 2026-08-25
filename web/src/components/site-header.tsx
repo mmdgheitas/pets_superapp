@@ -55,7 +55,10 @@ function useCartCount() {
 function CartBadge({ count }: { count: number }) {
   if (count === 0) return null;
   return (
-    <span className="absolute -end-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-2 ring-background">
+    <span
+      key={count}
+      className="absolute -end-1 -top-1 flex h-[18px] min-w-[18px] animate-cart-bounce items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground ring-2 ring-background"
+    >
       {toPersianDigits(count > 99 ? '99+' : count)}
     </span>
   );

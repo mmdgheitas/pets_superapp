@@ -30,10 +30,10 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_BADGE: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
-  PENDING: { label: 'در انتظار', variant: 'warning' },
-  APPROVED: { label: 'تأیید شده', variant: 'success' },
-  REJECTED: { label: 'رد شده', variant: 'destructive' },
-  SUSPENDED: { label: 'تعلیق', variant: 'outline' },
+  PENDING: { label: 'در انتظار', variant: 'pending' },
+  APPROVED: { label: 'تأیید شده', variant: 'approved' },
+  REJECTED: { label: 'رد شده', variant: 'rejected' },
+  SUSPENDED: { label: 'تعلیق', variant: 'suspended' },
 };
 
 export default function AdminSellersPage() {
@@ -115,8 +115,45 @@ export default function AdminSellersPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold sm:text-2xl">مدیریت فروشندگان</h1>
-        <p className="mt-1 text-sm text-muted-foreground">تأیید، رد یا تعلیق فروشندگان</p>
+        <h1 className="font-display text-xl font-extrabold sm:text-2xl">صف تأیید فروشندگان</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          تریاژ با رنگ وضعیت — تأیید، رد یا تعلیق در یک نگاه
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {[
+          { key: 'PENDING', label: 'در انتظار', cls: 'bg-status-pending-bg text-status-pending' },
+          { key: 'APPROVED', label: 'تأیید', cls: 'bg-status-approved-bg text-status-approved' },
+          { key: 'REJECTED', label: 'رد', cls: 'bg-status-rejected-bg text-status-rejected' },
+          { key: 'SUSPENDED', label: 'تعلیق', cls: 'bg-status-suspended-bg text-status-suspended' },
+        ].map((chip) => (
+          <button
+            key={chip.key}
+            type="button"
+            onClick={() => {
+              setStatusFilter(chip.key);
+              setPage(1);
+            }}
+            className={`rounded-full px-3 py-1 text-xs font-bold transition-shadow ${chip.cls} ${
+              statusFilter === chip.key ? 'ring-2 ring-offset-2 ring-foreground/20' : 'opacity-80 hover:opacity-100'
+            }`}
+          >
+            {chip.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => {
+            setStatusFilter('all');
+            setPage(1);
+          }}
+          className={`rounded-full border px-3 py-1 text-xs font-medium ${
+            statusFilter === 'all' ? 'bg-foreground text-background' : 'bg-card text-muted-foreground'
+          }`}
+        >
+          همه
+        </button>
       </div>
 
       <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
@@ -139,10 +176,18 @@ export default function AdminSellersPage() {
           {sellers.map((s) => {
             const badge = STATUS_BADGE[s.status] ?? { label: s.status, variant: 'outline' as const };
             const isRejectingThis = rejectingId === s.id;
+            const railStyle =
+              s.status === 'PENDING'
+                ? { borderInlineStartColor: 'hsl(var(--status-pending))' }
+                : s.status === 'APPROVED'
+                  ? { borderInlineStartColor: 'hsl(var(--status-approved))' }
+                  : s.status === 'REJECTED'
+                    ? { borderInlineStartColor: 'hsl(var(--status-rejected))' }
+                    : { borderInlineStartColor: 'hsl(var(--status-suspended))' };
             return (
-              <Card key={s.id}>
+              <Card key={s.id} className="border-s-4" style={railStyle}>
                 <CardContent className="flex flex-wrap items-center gap-4 p-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
                     <Store className="h-5 w-5" />
                   </div>
                   <div className="min-w-[160px] flex-1">

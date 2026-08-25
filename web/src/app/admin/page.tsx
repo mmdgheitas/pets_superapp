@@ -61,15 +61,17 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-extrabold sm:text-2xl">پنل مدیریت پت‌شاپ</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{formatDate(new Date().toISOString())}</p>
+        <h1 className="font-display text-xl font-extrabold sm:text-2xl">عملیات پلتفرم</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          گزارش روزانه و صف‌های نیازمند تصمیم · {formatDate(new Date().toISOString())}
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Users} label="تعداد کاربران" value={toPersianDigits(users.total)} sub={`${toPersianDigits(users.customers)} خریدار`} tone="primary" />
         <StatCard icon={Store} label="فروشندگان تأییدشده" value={toPersianDigits(sellers.APPROVED)} sub={`${toPersianDigits(sellers.PENDING)} در انتظار تأیید`} tone="info" />
         <StatCard icon={Package} label="محصولات فعال" value={toPersianDigits(products.ACTIVE)} sub={`${toPersianDigits(products.DRAFT)} پیش‌نویس`} tone="success" />
-        <StatCard icon={DollarSign} label="سفارش امروز" value={toPersianDigits(orders.today)} sub={`درآمد: ${formatToman(orders.revenueToday)}`} tone="warning" />
+        <StatCard icon={DollarSign} label="سفارش امروز" value={toPersianDigits(orders.today)} sub={`GMV: ${formatToman(orders.revenueToday)}`} tone="money" />
       </div>
 
       {/* Actionable alerts first — the things that actually need a human decision today */}

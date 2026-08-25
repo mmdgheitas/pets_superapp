@@ -15,6 +15,12 @@ const badgeVariants = cva(
         destructive: 'border-transparent bg-destructive-bg text-destructive',
         outline: 'border-border bg-background text-foreground',
         solid: 'border-transparent bg-foreground text-background',
+        money: 'border-transparent bg-money-bg text-money',
+        /* Admin seller-queue triage — fixed hues used nowhere else */
+        pending: 'border-transparent bg-status-pending-bg text-status-pending',
+        approved: 'border-transparent bg-status-approved-bg text-status-approved',
+        rejected: 'border-transparent bg-status-rejected-bg text-status-rejected',
+        suspended: 'border-transparent bg-status-suspended-bg text-status-suspended',
       },
     },
     defaultVariants: { variant: 'default' },

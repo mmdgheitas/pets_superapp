@@ -18,7 +18,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
 
   return (
     <SellerProvider>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl" data-skin="seller">
         <DashboardShell navItems={NAV_ITEMS}>{children}</DashboardShell>
       </div>
     </SellerProvider>

@@ -22,6 +22,7 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { StatCard } from '@/components/ui/stat-card';
 import { PageSpinner } from '@/components/ui/page-spinner';
 import { SellerRegisterForm } from '@/components/seller-register-form';
+import { CommissionCard } from '@/components/ui/commission-card';
 import { useSeller } from '@/lib/seller-context';
 import { api, errorMessage } from '@/lib/api';
 import { toPersianDigits, formatToman, formatDate } from '@/lib/format';
@@ -37,7 +38,7 @@ import {
 } from 'recharts';
 import type { SellerDashboard, SalesReport, SalesReportSeries, OrderStatus } from '@/lib/types';
 
-const CHART_COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd'];
+const CHART_COLORS = ['#1f6f68', '#2a9d8f', '#7bc4bb'];
 
 const ORDER_STATUS: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
   PAID: { label: 'پرداخت شد', variant: 'success' },
@@ -201,10 +202,10 @@ function ApprovedDashboard({ shopName }: { shopName: string }) {
         />
         <StatCard
           icon={DollarSign}
-          label="درآمد فروشنده"
+          label="درآمد خالص فروشنده"
           value={formatToman(stats.revenueIrr)}
-          sub="از سفارش‌های پذیرفته‌شده"
-          tone="info"
+          sub="پس از کسر کمیسیون پلتفرم"
+          tone="money"
         />
         <StatCard
           icon={AlertCircle}
@@ -219,11 +220,12 @@ function ApprovedDashboard({ shopName }: { shopName: string }) {
         <Card className="lg:col-span-3">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-[18px] w-[18px] text-primary" /> فروش ۳۰ روز گذشته
+              <TrendingUp className="h-[18px] w-[18px] text-money" /> GMV خالص ۳۰ روز
             </CardTitle>
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Calendar className="h-3.5 w-3.5" />
-              {toPersianDigits(chartData.length)} روز · درآمد {formatToman(totalRevenue)}
+              {toPersianDigits(chartData.length)} روز ·{' '}
+              <span className="money-figure text-sm">{formatToman(totalRevenue)}</span>
             </span>
           </CardHeader>
           <CardContent>
@@ -284,38 +286,47 @@ function ApprovedDashboard({ shopName }: { shopName: string }) {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-[18px] w-[18px] text-primary" /> فروش‌های اخیر
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {dashboard.recentSales.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">هنوز فروشی ثبت نشده است.</p>
-            ) : (
-              <div className="space-y-2.5">
-                {dashboard.recentSales.map((sale) => {
-                  const info = ORDER_STATUS[sale.order.status as OrderStatus] ?? { label: sale.order.status, variant: 'outline' as const };
-                  return (
-                    <div key={sale.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{sale.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {toPersianDigits(sale.quantity)} × {formatToman(sale.sellerAmount)} · {formatDate(sale.order.createdAt)}
-                        </p>
+        <div className="space-y-6 lg:col-span-2">
+          <CommissionCard rate={dashboard.seller.commissionRate ?? 5} />
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="h-[18px] w-[18px] text-primary" /> فروش‌های اخیر
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {dashboard.recentSales.length === 0 ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">هنوز فروشی ثبت نشده است.</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {dashboard.recentSales.map((sale) => {
+                    const info = ORDER_STATUS[sale.order.status as OrderStatus] ?? {
+                      label: sale.order.status,
+                      variant: 'outline' as const,
+                    };
+                    return (
+                      <div key={sale.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{sale.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {toPersianDigits(sale.quantity)} عدد · {formatDate(sale.order.createdAt)}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          <span className="text-sm font-bold text-money num-tabular">
+                            {formatToman(sale.sellerAmount)}
+                          </span>
+                          <Badge variant={info.variant}>{info.label}</Badge>
+                        </div>
                       </div>
-                      <div className="flex shrink-0 flex-col items-end gap-1">
-                        <span className="text-sm font-bold num-tabular">{formatToman(sale.sellerAmount)}</span>
-                        <Badge variant={info.variant}>{info.label}</Badge>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

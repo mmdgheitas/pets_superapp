@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!ready) return <PageSpinner />;
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-6xl" data-skin="admin">
       <DashboardShell navItems={NAV_ITEMS}>{children}</DashboardShell>
     </div>
   );

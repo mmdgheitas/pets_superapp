@@ -7,6 +7,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { OrderTimeline } from '@/components/ui/order-timeline';
+import { ReservationCountdown } from '@/components/ui/reservation-countdown';
 import { api, errorMessage } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { formatDate, formatToman, toPersianDigits } from '@/lib/format';
@@ -23,7 +25,7 @@ const STATUS_LABEL: Record<OrderStatus, { label: string; variant: BadgeProps['va
   REFUNDED: { label: 'مرجوع‌شده', variant: 'secondary' },
 };
 
-const POLL_MS = 10_000; // per spec: 10-second polling instead of websockets
+const POLL_MS = 10_000;
 
 export default function OrdersPage() {
   return (
@@ -66,7 +68,6 @@ function OrdersList() {
 
   useEffect(() => {
     load();
-    // Poll order statuses every 10 seconds while the tab is open
     timer.current = setInterval(() => load(true), POLL_MS);
     return () => {
       if (timer.current) clearInterval(timer.current);
@@ -102,7 +103,7 @@ function OrdersList() {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 rounded-xl" />
+          <Skeleton key={i} className="h-40 rounded-xl" />
         ))}
       </div>
     );
@@ -122,19 +123,33 @@ function OrdersList() {
 
   return (
     <div className="space-y-3">
-      <h1 className="mb-1 text-xl font-extrabold sm:text-2xl">سفارش‌های من</h1>
+      <div className="mb-1">
+        <h1 className="font-display text-xl font-extrabold sm:text-2xl">سفارش‌های من</h1>
+        <p className="mt-0.5 text-xs text-muted-foreground">وضعیت‌ها هر چند ثانیه به‌روز می‌شوند — بدون نیاز به رفرش</p>
+      </div>
       {orders.map((order) => (
-        <Card key={order.id} className={busyId === order.id ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
-          <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
+        <Card
+          key={order.id}
+          className={busyId === order.id ? 'opacity-60 transition-opacity' : 'transition-opacity'}
+        >
+          <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-sm text-muted-foreground">
-                سفارش <span dir="ltr" className="num-tabular">#{order.id.slice(0, 8)}</span> · {formatDate(order.createdAt)}
+                سفارش <span dir="ltr" className="num-tabular">#{order.id.slice(0, 8)}</span> ·{' '}
+                {formatDate(order.createdAt)}
               </div>
               <Badge variant={STATUS_LABEL[order.status].variant}>{STATUS_LABEL[order.status].label}</Badge>
             </div>
-            <ul className="divide-y text-sm">
+
+            <OrderTimeline status={order.status} />
+
+            {order.status === 'PENDING_PAYMENT' && (
+              <ReservationCountdown startedAt={order.createdAt} label="مهلت پرداخت این سفارش" />
+            )}
+
+            <ul className="divide-y rounded-lg border text-sm">
               {order.items.map((item) => (
-                <li key={item.id} className="flex justify-between gap-2 py-1.5">
+                <li key={item.id} className="flex justify-between gap-2 px-3 py-2">
                   <span className="line-clamp-1">
                     {item.title} × {toPersianDigits(item.quantity)}
                   </span>
@@ -142,7 +157,8 @@ function OrdersList() {
                 </li>
               ))}
             </ul>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <b className="num-tabular">مجموع: {formatToman(order.total)}</b>
               <div className="flex items-center gap-2">
                 {order.payment?.refId && (
@@ -155,7 +171,12 @@ function OrdersList() {
                     <Button size="sm" onClick={() => payAgain(order.id)} disabled={busyId === order.id}>
                       پرداخت <ExternalLink className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => cancel(order.id)} disabled={busyId === order.id}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => cancel(order.id)}
+                      disabled={busyId === order.id}
+                    >
                       لغو سفارش
                     </Button>
                   </>

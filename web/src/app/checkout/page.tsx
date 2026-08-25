@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { MapPin, ShieldCheck, Clock, Plus, Check } from 'lucide-react';
+import { MapPin, ShieldCheck, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ReservationCountdown } from '@/components/ui/reservation-countdown';
+import { PriceConfirmedBadge } from '@/components/ui/commission-card';
 import { api, errorMessage } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { formatToman, toPersianDigits } from '@/lib/format';
@@ -160,6 +162,10 @@ export default function CheckoutPage() {
                 <span className="text-primary num-tabular">{formatToman(cart.subtotal)}</span>
               </div>
 
+              <PriceConfirmedBadge />
+
+              <ReservationCountdown label="پس از ثبت، موجودی تا این زمان رزرو می‌شود" />
+
               <Button
                 className="mt-1 w-full"
                 size="lg"
@@ -173,9 +179,6 @@ export default function CheckoutPage() {
               <div className="space-y-1.5 border-t pt-3 text-xs text-muted-foreground">
                 <p className="flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> پرداخت امن از طریق درگاه زرین‌پال
-                </p>
-                <p className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 shrink-0 text-warning" /> در صورت عدم پرداخت تا ۱۵ دقیقه سفارش لغو می‌شود
                 </p>
               </div>
             </CardContent>

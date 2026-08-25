@@ -2,50 +2,137 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Brand system — deep teal + warm sand (customer warmth),
+  desaturated ops surfaces (seller), near-monochrome triage (admin).
+  Skins via data-skin on a layout wrapper.
+*/
+
 @layer base {
-  :root {
-    /* Warm, calm neutrals — reduces visual fatigue for long browsing sessions */
-    --background: 30 25% 97%;
-    --foreground: 224 39% 14%;
+  :root,
+  [data-skin='customer'] {
+    /* Warm cream/sand canvas — browsing comfort */
+    --background: 36 40% 97%;
+    --foreground: 200 25% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 224 39% 14%;
+    --card: 40 33% 99%;
+    --card-foreground: 200 25% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 39% 14%;
+    --popover-foreground: 200 25% 12%;
 
-    /* Brand: violet — conveys trust + a bit of premium/playful character */
-    --primary: 258 80% 56%;
-    --primary-hover: 258 75% 49%;
-    --primary-foreground: 0 0% 100%;
+    /* Brand anchor: deep teal */
+    --primary: 174 62% 28%;
+    --primary-hover: 174 64% 22%;
+    --primary-foreground: 40 40% 98%;
 
-    --secondary: 258 45% 95%;
-    --secondary-foreground: 258 55% 32%;
+    --secondary: 168 28% 92%;
+    --secondary-foreground: 174 45% 22%;
 
-    --muted: 30 18% 93%;
-    --muted-foreground: 220 12% 45%;
+    --muted: 36 24% 93%;
+    --muted-foreground: 200 10% 42%;
 
-    --accent: 258 45% 94%;
-    --accent-foreground: 258 60% 34%;
+    --accent: 168 32% 94%;
+    --accent-foreground: 174 50% 24%;
 
-    /* Semantic feedback colors — consistent meaning across the app (recognition over recall) */
-    --success: 152 60% 36%;
+    /* Semantic */
+    --success: 152 55% 34%;
     --success-foreground: 0 0% 100%;
-    --success-bg: 152 55% 94%;
-    --warning: 38 92% 42%;
+    --success-bg: 152 45% 94%;
+    --warning: 32 90% 44%;
     --warning-foreground: 0 0% 100%;
-    --warning-bg: 43 96% 92%;
-    --info: 214 84% 52%;
+    --warning-bg: 40 96% 93%;
+    --info: 199 78% 42%;
     --info-foreground: 0 0% 100%;
-    --info-bg: 214 90% 95%;
-    --destructive: 0 72% 51%;
+    --info-bg: 199 80% 95%;
+    --destructive: 0 70% 48%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-bg: 0 80% 96%;
+    --destructive-bg: 0 78% 96%;
 
-    --border: 30 16% 89%;
-    --input: 30 14% 85%;
-    --ring: 258 80% 56%;
+    /* Money accent — only for GMV / payouts / commission figures */
+    --money: 152 58% 32%;
+    --money-foreground: 0 0% 100%;
+    --money-bg: 152 42% 94%;
+    --money-muted: 152 30% 88%;
+
+    /* Admin moderation statuses (available everywhere; primary use on admin) */
+    --status-pending: 38 92% 46%;
+    --status-pending-bg: 40 96% 93%;
+    --status-approved: 152 55% 34%;
+    --status-approved-bg: 152 45% 94%;
+    --status-rejected: 0 70% 48%;
+    --status-rejected-bg: 0 78% 96%;
+    --status-suspended: 220 12% 42%;
+    --status-suspended-bg: 220 14% 93%;
+
+    --border: 34 18% 88%;
+    --input: 34 14% 84%;
+    --ring: 174 62% 28%;
 
     --radius: 0.875rem;
+    --sand: 36 35% 94%;
+    --cream: 40 40% 98%;
+  }
+
+  /* Seller: cooler slate neutrals, brand desaturated, money pops */
+  [data-skin='seller'] {
+    --background: 210 16% 97%;
+    --foreground: 210 24% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 24% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 24% 12%;
+
+    --primary: 174 42% 30%;
+    --primary-hover: 174 46% 24%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 14% 93%;
+    --secondary-foreground: 210 20% 28%;
+
+    --muted: 210 14% 94%;
+    --muted-foreground: 210 10% 42%;
+
+    --accent: 210 16% 94%;
+    --accent-foreground: 174 40% 26%;
+
+    --money: 158 64% 34%;
+    --money-foreground: 0 0% 100%;
+    --money-bg: 158 48% 93%;
+    --money-muted: 158 28% 88%;
+
+    --border: 210 14% 88%;
+    --input: 210 12% 84%;
+    --ring: 174 42% 30%;
+  }
+
+  /* Admin: near-monochrome ops + fixed status hues for queue triage */
+  [data-skin='admin'] {
+    --background: 220 14% 97%;
+    --foreground: 220 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+
+    --primary: 220 16% 22%;
+    --primary-hover: 220 18% 16%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 12% 93%;
+    --secondary-foreground: 220 16% 28%;
+
+    --muted: 220 12% 94%;
+    --muted-foreground: 220 10% 42%;
+
+    --accent: 220 12% 94%;
+    --accent-foreground: 220 16% 24%;
+
+    --border: 220 12% 88%;
+    --input: 220 10% 84%;
+    --ring: 220 16% 28%;
+
+    --money: 158 55% 34%;
+    --money-bg: 158 40% 94%;
   }
 
   * {
@@ -62,13 +149,23 @@
     font-family: Vazirmatn, tahoma, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-wrap: pretty;
+    /* Persian script density — slightly open leading */
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    letter-spacing: -0.01em;
+    line-height: 1.45;
   }
 
   ::selection {
     background-color: hsl(var(--primary) / 0.18);
   }
 
-  /* Consistent, visible focus ring for keyboard users without adding noise for mouse users */
   :focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
@@ -85,6 +182,38 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground) / 0.4);
+  }
+}
+
+@layer components {
+  /* Soft brand wash behind storefront hero blocks */
+  .surface-sand {
+    background-color: hsl(var(--sand, 36 35% 94%));
+  }
+
+  .money-figure {
+    color: hsl(var(--money));
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+  }
+
+  .money-chip {
+    background-color: hsl(var(--money-bg));
+    color: hsl(var(--money));
+  }
+
+  /* Slim OTP / reservation progress */
+  .countdown-track {
+    height: 4px;
+    border-radius: 999px;
+    background-color: hsl(var(--muted));
+    overflow: hidden;
+  }
+  .countdown-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--success)));
+    transition: width 1s linear;
   }
 }
 
@@ -116,7 +245,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Shimmering skeleton placeholder — signals "content is coming" (reduces perceived wait) */
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -140,5 +268,27 @@
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes cart-bounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  70% {
+    transform: scale(0.94);
+  }
+}
+
+@keyframes soft-lift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-2px);
   }
 }

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#7c3aed',
+  themeColor: '#1f6f68',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"
         />
       </head>
-      <body className="min-h-screen">
+      <body className="min-h-screen" data-skin="customer">
         <SiteHeader />
         <main id="main-content" className="container py-6 pb-24 lg:pb-10">
           {children}

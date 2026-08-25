@@ -120,13 +120,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             </div>
 
-            <div>
+            <div className="space-y-1.5">
               {outOfStock ? (
                 <Badge variant="destructive">ناموجود</Badge>
               ) : product.stock <= 5 ? (
-                <Badge variant="warning">فقط {toPersianDigits(product.stock)} عدد در انبار</Badge>
+                <Badge variant="warning">فقط {toPersianDigits(product.stock)} عدد باقی مانده</Badge>
               ) : (
-                <Badge variant="success">موجود در انبار</Badge>
+                <Badge variant="success">
+                  موجود — {toPersianDigits(product.stock)} عدد در انبار
+                </Badge>
+              )}
+              {!outOfStock && product.stock <= 5 && (
+                <p className="text-xs text-warning">موجودی واقعی از سیستم رزرو — همین حالا رزرو کنید.</p>
               )}
             </div>
 
