@@ -152,8 +152,11 @@ npm run start:dev
 # 3. Storefront  →  http://localhost:3001
 cd ../web
 npm install
-npm run dev
+npm run dev          # mock data by default — no backend required
+# npm run dev:api    # optional: talk to the real API on :3000
 ```
+
+**Web-only demo (no Docker / API):** from `web/`, run `npm install && npm run dev`. Catalog, OTP login, cart, checkout, seller and admin panels all use the in-memory mock under `web/src/lib/mock/`. OTP is always `12345`.
 
 Or via Make from the repo root: `make infra`, then `make backend-install migrate seed backend` and `make web` in a second terminal.
 

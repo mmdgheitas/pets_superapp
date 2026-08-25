@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { OtpInput } from '@/components/ui/otp-input';
-import { api, errorMessage } from '@/lib/api';
+import { api, errorMessage, USE_MOCK } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { toPersianDigits } from '@/lib/format';
 import { toast } from '@/lib/toast-store';
@@ -105,6 +105,17 @@ export default function LoginPage() {
         <CardContent>
           {step === 'phone' ? (
             <form onSubmit={phoneForm.handleSubmit(requestOtp)} className="space-y-4">
+              {USE_MOCK && (
+                <div className="rounded-lg border border-dashed border-primary/30 bg-accent/50 p-3 text-xs leading-6 text-accent-foreground">
+                  <p className="font-bold text-primary">حالت نمایشی (بدون بک‌اند)</p>
+                  <p className="mt-1">کد تأیید همیشه <b dir="ltr">12345</b> است.</p>
+                  <ul className="mt-1 list-inside list-disc space-y-0.5 text-muted-foreground">
+                    <li dir="ltr">09120000000 — مدیر</li>
+                    <li dir="ltr">09121111111 — فروشنده</li>
+                    <li dir="ltr">09123333333 — خریدار</li>
+                  </ul>
+                </div>
+              )}
               <div className="space-y-1">
                 <Input
                   dir="ltr"

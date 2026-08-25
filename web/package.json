@@ -5,6 +5,8 @@
   "description": "Pet Marketplace storefront (Next.js, Persian RTL)",
   "scripts": {
     "dev": "next dev -p 3001",
+    "dev:mock": "NEXT_PUBLIC_USE_MOCK=true next dev -p 3001",
+    "dev:api": "NEXT_PUBLIC_USE_MOCK=false next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
     "typecheck": "tsc --noEmit"
