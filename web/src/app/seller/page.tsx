@@ -185,7 +185,7 @@ function ApprovedDashboard({ shopName }: { shopName: string }) {
         </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatCard
           icon={Package}
           label="تعداد محصولات"
@@ -216,23 +216,23 @@ function ApprovedDashboard({ shopName }: { shopName: string }) {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
+      <div className="grid gap-5 lg:grid-cols-5 lg:gap-6">
+        <Card className="min-w-0 lg:col-span-3">
+          <CardHeader className="flex-col items-stretch gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-[18px] w-[18px] text-money" /> GMV خالص ۳۰ روز
+              <TrendingUp className="h-[18px] w-[18px] shrink-0 text-money" /> GMV خالص ۳۰ روز
             </CardTitle>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />
+            <span className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5 shrink-0" />
               {toPersianDigits(chartData.length)} روز ·{' '}
               <span className="money-figure text-sm">{formatToman(totalRevenue)}</span>
             </span>
           </CardHeader>
           <CardContent>
             {chartData.length > 0 ? (
-              <div className="h-64">
+              <div className="h-56 w-full min-w-0 sm:h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                  <BarChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis
                       dataKey="date"

@@ -23,17 +23,23 @@ export function EmptyState({
   onAction?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed bg-card/50 px-6 py-16 text-center animate-fade-in">
-      {icon && <div className="text-5xl">{icon}</div>}
-      <h3 className="text-lg font-bold">{title}</h3>
-      {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed bg-card/50 px-5 py-12 text-center animate-fade-in sm:px-8 sm:py-16">
+      {icon != null && (
+        <div className="mb-1 flex items-center justify-center text-5xl leading-none [&_svg]:mx-auto">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-base font-bold sm:text-lg">{title}</h3>
+      {description && (
+        <p className="max-w-sm text-sm leading-7 text-muted-foreground">{description}</p>
+      )}
       {actionLabel && actionHref && (
-        <Link href={actionHref} className="mt-2">
+        <Link href={actionHref} className="mt-1">
           <Button>{actionLabel}</Button>
         </Link>
       )}
       {actionLabel && onAction && !actionHref && (
-        <Button className="mt-2" onClick={onAction}>
+        <Button className="mt-1" onClick={onAction}>
           {actionLabel}
         </Button>
       )}

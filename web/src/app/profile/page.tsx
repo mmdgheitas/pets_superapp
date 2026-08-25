@@ -96,15 +96,19 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-4">
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-extrabold text-primary">
+    <div className="mx-auto max-w-2xl space-y-5 sm:space-y-6">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-extrabold text-primary sm:h-16 sm:w-16 sm:text-2xl">
           {(user.fullName ?? user.phone).slice(0, 1)}
         </span>
-        <div>
-          <h1 className="text-lg font-extrabold">{user.fullName || 'کاربر پت‌شاپ'}</h1>
-          <div className="mt-1 flex items-center gap-2">
-            <span dir="ltr" className="text-sm text-muted-foreground num-tabular">{toPersianDigits(user.phone)}</span>
+        <div className="min-w-0">
+          <h1 className="truncate font-display text-lg font-extrabold sm:text-xl">
+            {user.fullName || 'کاربر پت‌شاپ'}
+          </h1>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <span dir="ltr" className="text-sm text-muted-foreground num-tabular">
+              {toPersianDigits(user.phone)}
+            </span>
             <Badge variant="secondary">{ROLE_LABEL[user.role] ?? user.role}</Badge>
           </div>
         </div>
@@ -113,23 +117,28 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <UserIcon className="h-[18px] w-[18px] text-primary" /> اطلاعات حساب
+            <UserIcon className="h-[18px] w-[18px] shrink-0 text-primary" /> اطلاعات حساب
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="نام و نام خانوادگی"
-              className="flex-1"
+              className="min-w-0 flex-1"
             />
-            <Button onClick={saveName} loading={savingName} disabled={fullName === (user.fullName ?? '')}>
+            <Button
+              onClick={saveName}
+              loading={savingName}
+              disabled={fullName === (user.fullName ?? '')}
+              className="shrink-0 sm:w-auto"
+            >
               ذخیره تغییرات
             </Button>
           </div>
           {user.role === 'CUSTOMER' && (
-            <p className="rounded-lg bg-accent p-3 text-sm text-accent-foreground">
+            <p className="rounded-lg bg-accent p-3 text-sm leading-7 text-accent-foreground">
               فروشنده هستید؟{' '}
               <Link href="/seller" className="font-bold underline underline-offset-2">
                 فروشگاه خود را راه‌اندازی کنید
@@ -141,11 +150,17 @@ export default function ProfilePage() {
       </Card>
 
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <MapPin className="h-[18px] w-[18px] text-primary" /> آدرس‌های من
+        <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
+          <CardTitle className="flex min-w-0 items-center gap-2 text-base">
+            <MapPin className="h-[18px] w-[18px] shrink-0 text-primary" />
+            <span className="truncate">آدرس‌های من</span>
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={() => setAddingAddress((v) => !v)} className="gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAddingAddress((v) => !v)}
+            className="shrink-0 gap-1"
+          >
             {addingAddress ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
             {addingAddress ? 'انصراف' : 'افزودن آدرس'}
           </Button>
@@ -154,7 +169,7 @@ export default function ProfilePage() {
           {addingAddress && (
             <form
               onSubmit={form.handleSubmit(addAddress)}
-              className="grid grid-cols-1 gap-3 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2 animate-fade-up"
+              className="grid grid-cols-1 gap-3 rounded-xl border bg-muted/30 p-3 animate-fade-up sm:grid-cols-2 sm:p-4"
             >
               <Field label="عنوان (منزل/محل کار)" error={form.formState.errors.title?.message}>
                 <Input {...form.register('title')} />
@@ -190,21 +205,29 @@ export default function ProfilePage() {
             </p>
           )}
           {addresses.map((addr) => (
-            <div key={addr.id} className="flex items-start justify-between gap-3 rounded-xl border p-3.5 text-sm">
-              <div>
-                <div className="flex items-center gap-2">
-                  <b>{addr.title ?? addr.receiverName}</b>
+            <div
+              key={addr.id}
+              className="flex flex-col gap-2.5 rounded-xl border p-3 text-sm sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:p-3.5"
+            >
+              <div className="min-w-0 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <b className="leading-snug">{addr.title ?? addr.receiverName}</b>
                   {addr.isDefault && <Badge>پیش‌فرض</Badge>}
                 </div>
-                <p className="mt-1 text-muted-foreground">
+                <p className="leading-6 text-muted-foreground">
                   {addr.province}، {addr.city}، {addr.addressLine}
                 </p>
-                <p className="mt-0.5 text-xs text-muted-foreground num-tabular" dir="ltr">
+                <p className="text-xs text-muted-foreground num-tabular" dir="ltr">
                   {toPersianDigits(addr.receiverPhone)}
                 </p>
               </div>
               {!addr.isDefault && (
-                <Button variant="ghost" size="sm" className="gap-1 shrink-0" onClick={() => makeDefault(addr.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0 gap-1 self-start"
+                  onClick={() => makeDefault(addr.id)}
+                >
                   <Star className="h-3.5 w-3.5" /> پیش‌فرض کن
                 </Button>
               )}
@@ -213,7 +236,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Link href="/orders">
+      <Link href="/orders" className="block">
         <Button variant="outline" className="w-full gap-2">
           <ClipboardList className="h-4 w-4" /> مشاهده سفارش‌های من
         </Button>
@@ -234,8 +257,8 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1 text-xs">
-      <span className="font-medium text-muted-foreground">
+    <label className="block space-y-1.5 text-xs">
+      <span className="block font-medium leading-snug text-muted-foreground">
         {label} {required && <span className="text-destructive">*</span>}
       </span>
       {children}

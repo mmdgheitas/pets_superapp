@@ -85,9 +85,9 @@ export function ProductCard({ product }: { product: ProductCardType }) {
               disabled={adding}
               aria-label="افزودن سریع به سبد خرید"
               className={cn(
-                'absolute bottom-2 start-2 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-raised',
-                'translate-y-2 opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100',
-                'active:scale-90 disabled:opacity-60 sm:flex',
+                'absolute bottom-2 start-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-raised sm:h-9 sm:w-9',
+                'translate-y-1 opacity-100 transition-all duration-200 sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100',
+                'active:scale-90 disabled:opacity-60',
               )}
             >
               <Plus className="h-4 w-4" />
@@ -95,23 +95,27 @@ export function ProductCard({ product }: { product: ProductCardType }) {
           )}
         </div>
 
-        <CardContent className="flex flex-1 flex-col gap-1.5 p-3">
-          <h3 className="line-clamp-2 min-h-10 text-sm font-medium leading-5">{product.title}</h3>
+        <CardContent className="flex flex-1 flex-col gap-1 p-2.5 sm:gap-1.5 sm:p-3">
+          <h3 className="line-clamp-2 min-h-[2.5rem] text-[13px] font-medium leading-5 sm:text-sm">
+            {product.title}
+          </h3>
           <Rating value={product.ratingAvg} count={product.ratingCount} size="xs" />
           {product.seller?.shopName && (
-            <p className="truncate text-xs text-muted-foreground">{product.seller.shopName}</p>
+            <p className="truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">
+              {product.seller.shopName}
+            </p>
           )}
-          <div className="mt-auto flex flex-col pt-1.5">
+          <div className="mt-auto flex flex-col gap-0.5 pt-1">
             {hasDiscount && (
-              <span className="text-xs text-muted-foreground line-through num-tabular">
+              <span className="text-[11px] leading-none text-muted-foreground line-through num-tabular sm:text-xs">
                 {formatToman(product.compareAtPrice)}
               </span>
             )}
-            <span className="text-base font-extrabold text-foreground num-tabular">
+            <span className="text-sm font-extrabold leading-snug text-foreground num-tabular sm:text-base">
               {formatToman(product.price)}
             </span>
             {lowStock && (
-              <span className="mt-0.5 text-[11px] font-medium text-warning">
+              <span className="text-[10px] font-medium leading-snug text-warning sm:text-[11px]">
                 فقط {toPersianDigits(product.stock)} عدد باقی مانده
               </span>
             )}

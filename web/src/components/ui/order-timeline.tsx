@@ -43,37 +43,43 @@ export function OrderTimeline({ status, className }: { status: OrderStatus; clas
   const current = RANK[status] ?? 0;
 
   return (
-    <ol className={cn('flex w-full items-start justify-between gap-1', className)} aria-label="وضعیت سفارش">
+    <ol className={cn('flex w-full items-start', className)} aria-label="وضعیت سفارش">
       {FLOW.map((step, i) => {
         const active = current === i;
         const completed = current > i;
         const Icon = step.icon;
+        const isLast = i === FLOW.length - 1;
         return (
-          <li key={step.key} className="relative flex flex-1 flex-col items-center gap-1.5 text-center">
-            {i < FLOW.length - 1 && (
-              <span
-                aria-hidden
-                className={cn(
-                  'absolute start-1/2 top-3.5 h-0.5 w-full -translate-y-1/2',
-                  current > i ? 'bg-primary' : 'bg-border',
-                )}
-              />
-            )}
-            <span
-              className={cn(
-                'relative z-[1] flex h-7 w-7 items-center justify-center rounded-full border-2 text-[11px] transition-colors',
-                completed
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : active
-                    ? 'border-primary bg-background text-primary ring-4 ring-primary/15'
-                    : 'border-border bg-card text-muted-foreground',
+          <li
+            key={step.key}
+            className={cn('relative flex flex-col items-center gap-1.5 text-center', isLast ? 'shrink-0' : 'min-w-0 flex-1')}
+          >
+            <div className="relative flex w-full items-center justify-center">
+              {!isLast && (
+                <span
+                  aria-hidden
+                  className={cn(
+                    'absolute start-1/2 top-1/2 z-0 h-0.5 w-full -translate-y-1/2',
+                    current > i ? 'bg-primary' : 'bg-border',
+                  )}
+                />
               )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-            </span>
+              <span
+                className={cn(
+                  'relative z-[1] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 bg-card text-[11px] transition-colors',
+                  completed
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : active
+                      ? 'border-primary text-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]'
+                      : 'border-border text-muted-foreground',
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+              </span>
+            </div>
             <span
               className={cn(
-                'max-w-[4.5rem] text-[10px] leading-tight sm:text-[11px]',
+                'px-0.5 text-[10px] leading-tight sm:text-[11px]',
                 active || completed ? 'font-bold text-foreground' : 'text-muted-foreground',
               )}
             >

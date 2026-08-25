@@ -59,12 +59,15 @@ export function ReservationCountdown({
 
   return (
     <div className={cn('space-y-2 rounded-xl border bg-card px-3 py-2.5 shadow-xs', className)}>
-      <div className="flex items-center justify-between gap-2 text-xs">
-        <span className="flex items-center gap-1.5 text-muted-foreground">
-          <Clock className={cn('h-3.5 w-3.5', urgent ? 'text-warning' : 'text-primary')} />
-          {label}
+      <div className="flex items-start justify-between gap-3 text-xs">
+        <span className="flex min-w-0 items-start gap-1.5 leading-snug text-muted-foreground">
+          <Clock className={cn('mt-0.5 h-3.5 w-3.5 shrink-0', urgent ? 'text-warning' : 'text-primary')} />
+          <span className="min-w-0">{label}</span>
         </span>
-        <span className={cn('font-bold num-tabular', urgent ? 'text-warning' : 'text-foreground')} dir="ltr">
+        <span
+          className={cn('shrink-0 font-bold leading-none num-tabular', urgent ? 'text-warning' : 'text-foreground')}
+          dir="ltr"
+        >
           {toPersianDigits(formatMmSs(remaining))}
         </span>
       </div>
@@ -74,7 +77,7 @@ export function ReservationCountdown({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-[11px] leading-5 text-muted-foreground">
+      <p className="text-[11px] leading-6 text-muted-foreground">
         تا پایان این زمان موجودی برای شما نگه داشته می‌شود؛ در صورت عدم پرداخت سفارش به‌صورت خودکار لغو می‌شود.
       </p>
     </div>

@@ -27,24 +27,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen" data-skin="customer">
         <SiteHeader />
-        <main id="main-content" className="container py-6 pb-24 lg:pb-10">
+        <main id="main-content" className="container py-5 pb-28 sm:py-6 lg:pb-12">
           {children}
         </main>
 
-        <footer className="mt-10 border-t bg-card pb-20 lg:pb-0">
-          <div className="container grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-3">
+        <footer className="mt-8 border-t bg-card pb-24 lg:mt-12 lg:pb-0">
+          <div className="container grid gap-8 py-8 sm:grid-cols-2 sm:py-10 lg:grid-cols-4">
+            <div className="space-y-2.5">
               <div className="flex items-center gap-1.5 font-extrabold text-primary">
-                <PawPrint className="h-6 w-6" />
-                <span className="text-lg">پت‌شاپ</span>
+                <PawPrint className="h-6 w-6 shrink-0" />
+                <span className="text-lg leading-none">پت‌شاپ</span>
               </div>
-              <p className="text-sm leading-7 text-muted-foreground">
+              <p className="max-w-xs text-sm leading-7 text-muted-foreground">
                 مرجع خرید آنلاین غذا، اسباب‌بازی و لوازم جانبی حیوانات خانگی در سراسر ایران.
               </p>
             </div>
 
-            <div className="space-y-3 text-sm">
-              <h3 className="font-bold">دسترسی سریع</h3>
+            <div className="space-y-2.5 text-sm">
+              <h3 className="font-bold leading-none">دسترسی سریع</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li><Link href="/products" className="transition-colors hover:text-primary">همه محصولات</Link></li>
                 <li><Link href="/orders" className="transition-colors hover:text-primary">پیگیری سفارش</Link></li>
@@ -52,24 +52,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </ul>
             </div>
 
-            <div className="space-y-3 text-sm">
-              <h3 className="font-bold">همکاری با ما</h3>
+            <div className="space-y-2.5 text-sm">
+              <h3 className="font-bold leading-none">همکاری با ما</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li><Link href="/seller" className="transition-colors hover:text-primary">فروش در پت‌شاپ</Link></li>
                 <li><Link href="/login" className="transition-colors hover:text-primary">ورود فروشندگان</Link></li>
               </ul>
             </div>
 
-            <div className="space-y-3 text-sm">
-              <h3 className="font-bold">چرا پت‌شاپ؟</h3>
-              <ul className="space-y-2.5 text-muted-foreground">
-                <li className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 shrink-0 text-success" /> پرداخت امن با زرین‌پال</li>
-                <li className="flex items-center gap-2"><Truck className="h-4 w-4 shrink-0 text-success" /> ارسال سریع به سراسر کشور</li>
-                <li className="flex items-center gap-2"><Headset className="h-4 w-4 shrink-0 text-success" /> پشتیبانی پاسخگو</li>
+            <div className="space-y-2.5 text-sm">
+              <h3 className="font-bold leading-none">چرا پت‌شاپ؟</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" /> پرداخت امن با زرین‌پال</li>
+                <li className="flex items-start gap-2"><Truck className="mt-0.5 h-4 w-4 shrink-0 text-success" /> ارسال سریع به سراسر کشور</li>
+                <li className="flex items-start gap-2"><Headset className="mt-0.5 h-4 w-4 shrink-0 text-success" /> پشتیبانی پاسخگو</li>
               </ul>
             </div>
           </div>
-          <div className="border-t py-4 text-center text-xs text-muted-foreground">
+          <div className="border-t px-4 py-3.5 text-center text-xs leading-relaxed text-muted-foreground">
             پت‌شاپ — پلتفرم خرید حیوانات خانگی · ساخته‌شده با ❤️ در ایران
           </div>
         </footer>

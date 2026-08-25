@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatCard icon={Users} label="تعداد کاربران" value={toPersianDigits(users.total)} sub={`${toPersianDigits(users.customers)} خریدار`} tone="primary" />
         <StatCard icon={Store} label="فروشندگان تأییدشده" value={toPersianDigits(sellers.APPROVED)} sub={`${toPersianDigits(sellers.PENDING)} در انتظار تأیید`} tone="info" />
         <StatCard icon={Package} label="محصولات فعال" value={toPersianDigits(products.ACTIVE)} sub={`${toPersianDigits(products.DRAFT)} پیش‌نویس`} tone="success" />

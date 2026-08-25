@@ -12,8 +12,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     if (startIcon || endIcon) {
       return (
         <div className="relative flex items-center">
-          {startIcon && (
-            <span className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-muted-foreground">
+            {startIcon && (
+            <span className="pointer-events-none absolute inset-y-0 start-0 flex w-10 items-center justify-center text-muted-foreground">
               {startIcon}
             </span>
           )}
@@ -23,8 +23,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground/70',
               'focus-visible:outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/40',
               'disabled:cursor-not-allowed disabled:opacity-50',
-              startIcon && 'ps-9',
-              endIcon && 'pe-9',
+              startIcon && 'ps-10',
+              endIcon && 'pe-10',
               error && 'border-destructive focus-visible:ring-destructive/30',
               className,
             )}
@@ -32,7 +32,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {endIcon && (
-            <span className="absolute inset-y-0 end-3 flex items-center text-muted-foreground">{endIcon}</span>
+            <span className="absolute inset-y-0 end-0 flex w-10 items-center justify-center text-muted-foreground">
+              {endIcon}
+            </span>
           )}
         </div>
       );

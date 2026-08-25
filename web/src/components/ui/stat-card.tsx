@@ -33,14 +33,21 @@ export function StatCard({
 }) {
   return (
     <Card className={cn('transition-shadow hover:shadow-raised', className)}>
-      <CardContent className="flex items-start gap-3 p-4">
-        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', TONES[tone])}>
-          <Icon className="h-5 w-5" />
+      <CardContent className="flex items-start gap-3 p-3.5 sm:p-4">
+        <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10', TONES[tone])}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-xs text-muted-foreground">{label}</p>
-          <p className={cn('text-xl font-extrabold num-tabular', tone === 'money' && 'text-money')}>{value}</p>
-          {sub && <p className="truncate text-xs text-muted-foreground">{sub}</p>}
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <p className="truncate text-xs leading-snug text-muted-foreground">{label}</p>
+          <p
+            className={cn(
+              'text-lg font-extrabold leading-tight num-tabular sm:text-xl',
+              tone === 'money' && 'text-money',
+            )}
+          >
+            {value}
+          </p>
+          {sub && <p className="truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">{sub}</p>}
         </div>
       </CardContent>
     </Card>

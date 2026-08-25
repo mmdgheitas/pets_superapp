@@ -15,7 +15,7 @@ export function SearchForm({ initialQ }: { initialQ: string }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="flex w-full max-w-sm" role="search">
+    <form onSubmit={onSubmit} className="w-full max-w-sm" role="search">
       <Input
         value={q}
         onChange={(e) => setQ(e.target.value)}

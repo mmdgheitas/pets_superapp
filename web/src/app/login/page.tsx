@@ -87,19 +87,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center">
-      <div className="mb-6 flex flex-col items-center gap-2">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-raised">
-          <PawPrint className="h-7 w-7" />
+    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center py-2 sm:min-h-[70vh]">
+      <div className="mb-5 flex flex-col items-center gap-2 sm:mb-6">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-raised sm:h-14 sm:w-14">
+          <PawPrint className="h-6 w-6 sm:h-7 sm:w-7" />
         </span>
       </div>
 
       <Card className="animate-fade-up">
-        <CardHeader className="items-center text-center">
-          <CardTitle className="text-xl">
+        <CardHeader className="items-center space-y-2 text-center">
+          <CardTitle className="text-lg sm:text-xl">
             {step === 'phone' ? 'ورود یا ثبت‌نام' : 'کد تأیید را وارد کنید'}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm leading-7 text-muted-foreground">
             {step === 'phone'
               ? 'با شماره موبایل خود وارد شوید، ثبت‌نام هم به همین سادگی است'
               : `کد ۵ رقمی ارسال‌شده به ${toPersianDigits(phone)} را وارد کنید`}
@@ -109,13 +109,21 @@ export default function LoginPage() {
           {step === 'phone' ? (
             <form onSubmit={phoneForm.handleSubmit(requestOtp)} className="space-y-4">
               {USE_MOCK && (
-                <div className="rounded-lg border border-dashed border-primary/30 bg-accent/50 p-3 text-xs leading-6 text-accent-foreground">
+                <div className="rounded-lg border border-dashed border-primary/30 bg-accent/50 p-3 text-start text-xs leading-6 text-accent-foreground">
                   <p className="font-bold text-primary">حالت نمایشی (بدون بک‌اند)</p>
-                  <p className="mt-1">کد تأیید همیشه <b dir="ltr">12345</b> است.</p>
-                  <ul className="mt-1 list-inside list-disc space-y-0.5 text-muted-foreground">
-                    <li dir="ltr">09120000000 — مدیر</li>
-                    <li dir="ltr">09121111111 — فروشنده</li>
-                    <li dir="ltr">09123333333 — خریدار</li>
+                  <p className="mt-1">
+                    کد تأیید همیشه <b dir="ltr">12345</b> است.
+                  </p>
+                  <ul className="mt-1.5 space-y-0.5 text-muted-foreground">
+                    <li dir="ltr" className="num-tabular">
+                      09120000000 — مدیر
+                    </li>
+                    <li dir="ltr" className="num-tabular">
+                      09121111111 — فروشنده
+                    </li>
+                    <li dir="ltr" className="num-tabular">
+                      09123333333 — خریدار
+                    </li>
                   </ul>
                 </div>
               )}

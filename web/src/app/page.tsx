@@ -26,7 +26,7 @@ export default async function HomePage() {
   const banner = banners?.[0];
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 sm:space-y-10 lg:space-y-12">
       {/* Hero — warmth first (pitch screen #1) */}
       <section className="overflow-hidden rounded-2xl">
         {banner ? (
@@ -76,18 +76,18 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-4">
         {TRUST_POINTS.map(({ icon: Icon, title, desc }) => (
           <div
             key={title}
-            className="flex items-center gap-3 rounded-xl border bg-card p-3.5 shadow-xs sm:p-4"
+            className="flex items-center gap-2.5 rounded-xl border bg-card p-3 shadow-xs sm:gap-3 sm:p-3.5"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-bg text-success">
-              <Icon className="h-5 w-5" />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success-bg text-success sm:h-10 sm:w-10">
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold">{title}</p>
-              <p className="truncate text-xs text-muted-foreground">{desc}</p>
+              <p className="truncate text-xs font-bold leading-snug sm:text-sm">{title}</p>
+              <p className="truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">{desc}</p>
             </div>
           </div>
         ))}
@@ -95,20 +95,20 @@ export default async function HomePage() {
 
       {categories && categories.length > 0 && (
         <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl font-bold">دسته‌بندی‌ها</h2>
+          <div className="mb-3 flex items-center justify-between sm:mb-4">
+            <h2 className="font-display text-lg font-bold sm:text-xl">دسته‌بندی‌ها</h2>
           </div>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-8">
             {categories.slice(0, 8).map((cat) => (
               <Link
                 key={cat.id}
                 href={`/products?category=${cat.slug}`}
-                className="group flex flex-col items-center gap-2 rounded-xl border bg-card p-4 text-center shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card"
+                className="group flex flex-col items-center gap-1.5 rounded-xl border bg-card p-3 text-center shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card sm:gap-2 sm:p-4"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-2xl transition-transform group-hover:scale-110">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-xl leading-none transition-transform group-hover:scale-110 sm:h-12 sm:w-12 sm:text-2xl">
                   {cat.icon ?? '🐾'}
                 </span>
-                <span className="text-xs font-semibold sm:text-sm">{cat.name}</span>
+                <span className="line-clamp-2 text-[11px] font-semibold leading-snug sm:text-sm">{cat.name}</span>
               </Link>
             ))}
           </div>
@@ -116,19 +116,19 @@ export default async function HomePage() {
       )}
 
       <section>
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Star className="h-5 w-5 fill-warning text-warning" />
-            <h2 className="font-display text-xl font-bold">پرفروش‌ترین‌ها</h2>
+        <div className="mb-3 flex items-center justify-between gap-2 sm:mb-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <Star className="h-5 w-5 shrink-0 fill-warning text-warning" />
+            <h2 className="font-display text-lg font-bold sm:text-xl">پرفروش‌ترین‌ها</h2>
           </div>
-          <Link href="/products?sort=best_selling">
+          <Link href="/products?sort=best_selling" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-1 text-primary hover:text-primary">
               مشاهده همه <ArrowLeft className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>
         {featured && featured.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {featured.map((p, i) => (
               <div key={p.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
                 <ProductCard product={p} />
@@ -140,15 +140,17 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="flex flex-col items-center gap-4 rounded-2xl border border-primary/10 bg-secondary p-6 text-center sm:flex-row sm:justify-between sm:text-start">
-        <div>
-          <h3 className="font-display text-lg font-bold text-secondary-foreground">فروشنده لوازم حیوانات خانگی هستید؟</h3>
-          <p className="mt-1 text-sm text-secondary-foreground/80">
+      <section className="flex flex-col items-center gap-4 rounded-2xl border border-primary/10 bg-secondary p-5 text-center sm:flex-row sm:justify-between sm:p-6 sm:text-start">
+        <div className="min-w-0 space-y-1">
+          <h3 className="font-display text-base font-bold text-secondary-foreground sm:text-lg">
+            فروشنده لوازم حیوانات خانگی هستید؟
+          </h3>
+          <p className="text-sm leading-7 text-secondary-foreground/80">
             فروشگاه خود را رایگان راه‌اندازی کنید — تسویه شفاف، کمیسیون مشخص، دسترسی به هزاران مشتری.
           </p>
         </div>
-        <Link href="/seller">
-          <Button variant="default" className="shrink-0">
+        <Link href="/seller" className="w-full shrink-0 sm:w-auto">
+          <Button variant="default" className="w-full sm:w-auto">
             شروع فروش
           </Button>
         </Link>

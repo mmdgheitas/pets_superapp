@@ -21,13 +21,13 @@ export function Rating({
   const rounded = Math.round(value * 2) / 2;
 
   return (
-    <div className={cn('inline-flex items-center gap-1', className)}>
-      <div className="flex items-center" dir="ltr" aria-hidden>
+    <div className={cn('inline-flex items-center gap-1.5', className)}>
+      <div className="flex items-center gap-px" dir="ltr" aria-hidden>
         {Array.from({ length: 5 }).map((_, i) => {
           const filled = i + 1 <= rounded;
           const half = !filled && i + 0.5 === rounded;
           return (
-            <span key={i} className="relative">
+            <span key={i} className={cn('relative inline-flex shrink-0', sizeClass)}>
               <Star className={cn(sizeClass, 'text-muted-foreground/25')} />
               {(filled || half) && (
                 <Star
@@ -39,7 +39,7 @@ export function Rating({
           );
         })}
       </div>
-      <span className="text-xs font-medium text-muted-foreground num-tabular">
+      <span className="text-[11px] font-medium leading-none text-muted-foreground num-tabular sm:text-xs">
         {toPersianDigits(value.toFixed(1))}
         {count != null && <span> ({toPersianDigits(count)})</span>}
       </span>

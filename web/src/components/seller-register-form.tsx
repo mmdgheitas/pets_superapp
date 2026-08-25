@@ -64,26 +64,31 @@ export function SellerRegisterForm({ onRegistered }: { onRegistered: () => void 
   };
 
   return (
-    <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-5">
+    <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-5 lg:gap-8">
       <div className="space-y-4 lg:col-span-2">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-raised">
-          <Store className="h-7 w-7" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-raised sm:h-14 sm:w-14">
+          <Store className="h-6 w-6 sm:h-7 sm:w-7" />
         </div>
-        <h1 className="text-xl font-extrabold sm:text-2xl">فروشگاه خودتان را راه‌اندازی کنید</h1>
+        <h1 className="font-display text-xl font-extrabold leading-snug sm:text-2xl">
+          فروشگاه خودتان را راه‌اندازی کنید
+        </h1>
         <p className="text-sm leading-7 text-muted-foreground">
           به جمع فروشندگان پت‌شاپ بپیوندید و لوازم حیوانات خانگی خود را به هزاران مشتری در سراسر کشور بفروشید.
         </p>
         <ul className="space-y-2.5">
           {PERKS.map((perk) => (
-            <li key={perk} className="flex items-start gap-2 text-sm">
+            <li key={perk} className="flex items-start gap-2 text-sm leading-6">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              {perk}
+              <span>{perk}</span>
             </li>
           ))}
         </ul>
-        <p className="flex items-start gap-2 rounded-lg bg-info-bg p-3 text-xs text-info">
+        <p className="flex items-start gap-2 rounded-lg bg-info-bg p-3 text-xs leading-6 text-info">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
-          پس از ثبت درخواست، تیم پت‌شاپ ظرف ۱ تا ۲ روز کاری آن را بررسی می‌کند. تا آن زمان می‌توانید اطلاعات فروشگاه را از همین صفحه مشاهده کنید.
+          <span>
+            پس از ثبت درخواست، تیم پت‌شاپ ظرف ۱ تا ۲ روز کاری آن را بررسی می‌کند. تا آن زمان می‌توانید اطلاعات
+            فروشگاه را از همین صفحه مشاهده کنید.
+          </span>
         </p>
       </div>
 

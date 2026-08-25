@@ -34,11 +34,19 @@ export function AddToCartButton({ productId, stock, disabled }: { productId: str
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       {!disabled && (
-        <QuantityStepper value={quantity} max={stock} onChange={setQuantity} />
+        <div className="shrink-0 self-start sm:self-center">
+          <QuantityStepper value={quantity} max={stock} onChange={setQuantity} />
+        </div>
       )}
-      <Button onClick={add} disabled={disabled || state === 'loading'} loading={state === 'loading'} size="lg" className="flex-1">
+      <Button
+        onClick={add}
+        disabled={disabled || state === 'loading'}
+        loading={state === 'loading'}
+        size="lg"
+        className="w-full flex-1"
+      >
         {state === 'done' ? (
           <>
             <Check className="h-5 w-5" /> اضافه شد

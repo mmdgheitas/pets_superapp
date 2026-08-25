@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ' +
+  'relative inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg text-sm font-medium leading-none ' +
     'transition-[background-color,color,box-shadow,transform] duration-150 ease-spring ' +
     'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
@@ -17,15 +17,15 @@ const buttonVariants = cva(
         success: 'bg-success text-success-foreground shadow-soft hover:bg-success/90',
         outline: 'border border-input bg-background hover:border-primary/40 hover:bg-accent hover:text-accent-foreground',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
+        link: 'h-auto gap-1 px-0 text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-[13px]',
-        lg: 'h-12 rounded-lg px-6 text-[15px]',
-        xl: 'h-14 rounded-xl px-8 text-base',
-        icon: 'h-10 w-10 shrink-0',
-        'icon-sm': 'h-8 w-8 shrink-0',
+        default: 'h-10 min-h-10 px-4',
+        sm: 'h-8 min-h-8 rounded-md px-3 text-[13px]',
+        lg: 'h-11 min-h-11 rounded-lg px-5 text-[15px] sm:h-12 sm:min-h-12 sm:px-6',
+        xl: 'h-12 min-h-12 rounded-xl px-6 text-base sm:h-14 sm:min-h-14 sm:px-8',
+        icon: 'h-10 w-10 shrink-0 p-0',
+        'icon-sm': 'h-8 w-8 shrink-0 p-0',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

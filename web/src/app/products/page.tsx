@@ -47,23 +47,23 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   };
 
   return (
-    <div className="space-y-5">
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <div className="space-y-4 sm:space-y-5">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
         <Link href="/" className="transition-colors hover:text-primary">خانه</Link>
-        <ChevronLeft className="h-3 w-3" />
+        <ChevronLeft className="h-3 w-3 shrink-0" />
         <Link href="/products" className={cn(!category && !q && 'font-semibold text-foreground')}>
           محصولات
         </Link>
         {activeCategory && (
           <>
-            <ChevronLeft className="h-3 w-3" />
+            <ChevronLeft className="h-3 w-3 shrink-0" />
             <span className="font-semibold text-foreground">{activeCategory.name}</span>
           </>
         )}
       </nav>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-extrabold sm:text-2xl">
+        <h1 className="font-display text-xl font-extrabold leading-snug sm:text-2xl">
           {q ? `نتایج جستجو برای «${q}»` : activeCategory ? activeCategory.name : 'همه محصولات'}
           {products && (
             <span className="ms-2 text-sm font-normal text-muted-foreground">
@@ -71,23 +71,21 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </span>
           )}
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="w-full shrink-0 sm:w-auto sm:min-w-[240px]">
           <SearchForm initialQ={q ?? ''} />
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
-        {/* Category filter rail — persistent context, one click away from any category
-            (avoids the "back button tax" of nested menus) */}
+      <div className="grid gap-5 lg:grid-cols-[200px_1fr] lg:gap-6 xl:grid-cols-[220px_1fr]">
         <aside className="hidden lg:block">
-          <div className="sticky top-20 space-y-1 rounded-xl border bg-card p-3 shadow-xs">
-            <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <div className="sticky top-20 space-y-0.5 rounded-xl border bg-card p-2.5 shadow-xs">
+            <p className="px-2.5 pb-2 pt-1 text-[11px] font-bold tracking-wide text-muted-foreground">
               دسته‌بندی‌ها
             </p>
             <Link
               href={buildHref({ category: '', page: '1' })}
               className={cn(
-                'block rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent',
+                'block rounded-lg px-2.5 py-2 text-sm leading-snug transition-colors hover:bg-accent',
                 !category ? 'bg-accent font-semibold text-accent-foreground' : 'text-foreground/80',
               )}
             >
@@ -98,41 +96,41 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 key={cat.id}
                 href={buildHref({ category: cat.slug, page: '1' })}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent',
+                  'flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm leading-snug transition-colors hover:bg-accent',
                   category === cat.slug ? 'bg-accent font-semibold text-accent-foreground' : 'text-foreground/80',
                 )}
               >
-                <span>{cat.icon}</span>
-                {cat.name}
+                <span className="shrink-0 text-base leading-none">{cat.icon}</span>
+                <span className="truncate">{cat.name}</span>
               </Link>
             ))}
           </div>
         </aside>
 
         <div className="min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2 lg:hidden">
-              <Link href={buildHref({ category: '', page: '1' })}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+              <Link href={buildHref({ category: '', page: '1' })} className="shrink-0">
                 <Button variant={!category ? 'default' : 'outline'} size="sm">
                   همه
                 </Button>
               </Link>
               {(categories ?? []).map((cat) => (
-                <Link key={cat.id} href={buildHref({ category: cat.slug, page: '1' })}>
+                <Link key={cat.id} href={buildHref({ category: cat.slug, page: '1' })} className="shrink-0">
                   <Button variant={category === cat.slug ? 'default' : 'outline'} size="sm">
-                    {cat.icon} {cat.name}
+                    <span className="me-1">{cat.icon}</span> {cat.name}
                   </Button>
                 </Link>
               ))}
             </div>
-            <div className="ms-auto">
+            <div className="sm:ms-auto">
               <SortSelect value={sort} />
             </div>
           </div>
 
           {products && products.data.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {products.data.map((p, i) => (
                   <div key={p.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
                     <ProductCard product={p} />
@@ -141,7 +139,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               </div>
 
               {products.meta.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-3 pt-4">
+                <div className="flex items-center justify-center gap-3 pt-2 sm:pt-4">
                   <Link
                     href={buildHref({ page: String(page - 1) })}
                     aria-disabled={page <= 1}
@@ -168,7 +166,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </>
           ) : (
             <EmptyState
-              icon={<PackageSearch className="mx-auto h-12 w-12 text-muted-foreground" />}
+              icon={<PackageSearch className="h-12 w-12 text-muted-foreground" />}
               title="محصولی پیدا نشد"
               description="می‌توانید فیلترها را تغییر دهید یا عبارت دیگری را جستجو کنید."
               actionLabel="مشاهده همه محصولات"

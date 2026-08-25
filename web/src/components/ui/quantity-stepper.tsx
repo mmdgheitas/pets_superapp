@@ -26,12 +26,13 @@ export function QuantityStepper({
 }) {
   const dec = () => onChange(Math.max(min, value - 1));
   const inc = () => onChange(max != null ? Math.min(max, value + 1) : value + 1);
-  const btnSize = size === 'sm' ? 'h-7 w-7' : 'h-9 w-9';
+  const btnSize = size === 'sm' ? 'h-8 w-8' : 'h-9 w-9';
+  const numWidth = size === 'sm' ? 'min-w-[1.75rem]' : 'min-w-[2rem]';
 
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-lg border bg-background',
+        'inline-flex h-fit items-stretch overflow-hidden rounded-lg border bg-background',
         disabled && 'opacity-50',
       )}
     >
@@ -39,7 +40,7 @@ export function QuantityStepper({
         type="button"
         aria-label="کاهش تعداد"
         className={cn(
-          'flex items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40',
+          'flex shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40',
           btnSize,
         )}
         onClick={dec}
@@ -47,14 +48,20 @@ export function QuantityStepper({
       >
         <Minus className="h-3.5 w-3.5" />
       </button>
-      <span className="w-8 text-center text-sm font-semibold num-tabular" aria-live="polite">
+      <span
+        className={cn(
+          'flex items-center justify-center px-0.5 text-center text-sm font-semibold leading-none num-tabular',
+          numWidth,
+        )}
+        aria-live="polite"
+      >
         {toPersianDigits(value)}
       </span>
       <button
         type="button"
         aria-label="افزایش تعداد"
         className={cn(
-          'flex items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40',
+          'flex shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40',
           btnSize,
         )}
         onClick={inc}

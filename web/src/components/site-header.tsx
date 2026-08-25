@@ -102,9 +102,9 @@ export function SiteHeader() {
         رفتن به محتوای اصلی
       </a>
       <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="container flex h-16 items-center gap-3 sm:gap-5">
+        <div className="container flex h-14 items-center gap-2 sm:h-16 sm:gap-4">
           <button
-            className="-ms-1 flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent lg:hidden"
+            className="-ms-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg hover:bg-accent lg:hidden"
             aria-label="منو"
             onClick={() => setMobileMenuOpen((v) => !v)}
           >
@@ -112,32 +112,32 @@ export function SiteHeader() {
           </button>
 
           <Link href="/" className="flex shrink-0 items-center gap-1.5 font-extrabold text-primary">
-            <PawPrint className="h-7 w-7" />
-            <span className="hidden text-xl sm:inline">پت‌شاپ</span>
+            <PawPrint className="h-6 w-6 sm:h-7 sm:w-7" />
+            <span className="hidden text-lg sm:inline sm:text-xl">پت‌شاپ</span>
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            <Button variant="ghost" onClick={() => router.push('/products')}>
+          <nav className="hidden items-center gap-0.5 lg:flex">
+            <Button variant="ghost" size="sm" onClick={() => router.push('/products')}>
               <PackageSearch className="h-4 w-4" /> محصولات
             </Button>
             {user?.role === 'SELLER' && (
-              <Button variant="ghost" onClick={() => router.push('/seller')}>
+              <Button variant="ghost" size="sm" onClick={() => router.push('/seller')}>
                 <Store className="h-4 w-4" /> فروشگاه من
               </Button>
             )}
             {user?.role === 'ADMIN' && (
-              <Button variant="ghost" onClick={() => router.push('/admin')}>
+              <Button variant="ghost" size="sm" onClick={() => router.push('/admin')}>
                 <Shield className="h-4 w-4" /> مدیریت
               </Button>
             )}
           </nav>
 
-          <div className="hidden flex-1 sm:block">
+          <div className="mx-1 hidden min-w-0 flex-1 sm:block">
             <HeaderSearch className="mx-auto max-w-lg" />
           </div>
 
-          <div className="mr-auto flex items-center gap-0.5 sm:mr-0 sm:gap-1">
-            <Link href="/cart" className="relative">
+          <div className="ms-auto flex shrink-0 items-center gap-0.5">
+            <Link href="/cart" className="relative inline-flex">
               <Button variant="ghost" size="icon" aria-label="سبد خرید">
                 <ShoppingCart className="h-5 w-5" />
               </Button>
@@ -145,26 +145,26 @@ export function SiteHeader() {
             </Link>
             {user ? (
               <>
-                <Link href="/orders" className="hidden lg:block">
+                <Link href="/orders" className="hidden lg:inline-flex">
                   <Button variant="ghost" size="icon" aria-label="سفارش‌های من">
                     <ClipboardList className="h-5 w-5" />
                   </Button>
                 </Link>
                 {user.role === 'SELLER' && (
-                  <Link href="/seller" className="hidden lg:block">
+                  <Link href="/seller" className="hidden lg:inline-flex">
                     <Button variant="ghost" size="icon" aria-label="داشبورد فروشنده">
                       <LayoutDashboard className="h-5 w-5" />
                     </Button>
                   </Link>
                 )}
                 {user.role === 'ADMIN' && (
-                  <Link href="/admin" className="hidden lg:block">
+                  <Link href="/admin" className="hidden lg:inline-flex">
                     <Button variant="ghost" size="icon" aria-label="پنل مدیریت">
                       <Shield className="h-5 w-5" />
                     </Button>
                   </Link>
                 )}
-                <Link href="/profile" className="hidden lg:block">
+                <Link href="/profile" className="hidden lg:inline-flex">
                   <Button variant="ghost" size="icon" aria-label="پروفایل">
                     <UserRound className="h-5 w-5" />
                   </Button>
@@ -180,8 +180,8 @@ export function SiteHeader() {
                 </Button>
               </>
             ) : (
-              <Link href="/login">
-                <Button size="sm" className="sm:h-10 sm:px-4">
+              <Link href="/login" className="ms-1">
+                <Button size="sm" className="px-3 sm:h-10 sm:px-4">
                   ورود / ثبت‌نام
                 </Button>
               </Link>
@@ -189,7 +189,7 @@ export function SiteHeader() {
           </div>
         </div>
 
-        <div className="border-t px-4 pb-3 pt-2 sm:hidden">
+        <div className="border-t px-3 pb-2.5 pt-2 sm:hidden">
           <HeaderSearch />
         </div>
 
@@ -271,13 +271,13 @@ function TabItem({ href, icon, label, badge }: { href: string; icon: React.React
   return (
     <Link
       href={href}
-      className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium text-muted-foreground transition-colors active:text-primary"
+      className="relative flex min-h-[3.25rem] flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[10px] font-medium leading-tight text-muted-foreground transition-colors active:text-primary sm:text-[11px]"
     >
-      <span className="relative">
+      <span className="relative flex h-5 w-5 items-center justify-center">
         {icon}
         {!!badge && <CartBadge count={badge} />}
       </span>
-      {label}
+      <span className="max-w-full truncate">{label}</span>
     </Link>
   );
 }

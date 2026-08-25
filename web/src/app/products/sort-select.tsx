@@ -41,13 +41,13 @@ export function SortSelect({ value }: { value: string }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-10 items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm font-medium shadow-xs transition-colors hover:border-primary/40"
+        className="inline-flex h-10 w-full items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm font-medium leading-none shadow-xs transition-colors hover:border-primary/40 sm:w-auto"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-        <span>مرتب‌سازی: {current.label}</span>
-        <ChevronDown className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform', open && 'rotate-180')} />
+        <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 flex-1 truncate text-start sm:flex-none">مرتب‌سازی: {current.label}</span>
+        <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <div

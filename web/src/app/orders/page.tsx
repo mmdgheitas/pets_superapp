@@ -122,21 +122,26 @@ function OrdersList() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="mb-1">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-1">
         <h1 className="font-display text-xl font-extrabold sm:text-2xl">سفارش‌های من</h1>
-        <p className="mt-0.5 text-xs text-muted-foreground">وضعیت‌ها هر چند ثانیه به‌روز می‌شوند — بدون نیاز به رفرش</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          وضعیت‌ها هر چند ثانیه به‌روز می‌شوند — بدون نیاز به رفرش
+        </p>
       </div>
       {orders.map((order) => (
         <Card
           key={order.id}
           className={busyId === order.id ? 'opacity-60 transition-opacity' : 'transition-opacity'}
         >
-          <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
+          <CardContent className="flex flex-col gap-3.5 p-3.5 sm:gap-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm text-muted-foreground">
-                سفارش <span dir="ltr" className="num-tabular">#{order.id.slice(0, 8)}</span> ·{' '}
-                {formatDate(order.createdAt)}
+              <div className="min-w-0 text-xs text-muted-foreground sm:text-sm">
+                سفارش{' '}
+                <span dir="ltr" className="num-tabular">
+                  #{order.id.slice(0, 8)}
+                </span>{' '}
+                · {formatDate(order.createdAt)}
               </div>
               <Badge variant={STATUS_LABEL[order.status].variant}>{STATUS_LABEL[order.status].label}</Badge>
             </div>
@@ -147,20 +152,20 @@ function OrdersList() {
               <ReservationCountdown startedAt={order.createdAt} label="مهلت پرداخت این سفارش" />
             )}
 
-            <ul className="divide-y rounded-lg border text-sm">
+            <ul className="divide-y overflow-hidden rounded-lg border text-sm">
               {order.items.map((item) => (
-                <li key={item.id} className="flex justify-between gap-2 px-3 py-2">
-                  <span className="line-clamp-1">
+                <li key={item.id} className="flex items-start justify-between gap-3 px-3 py-2">
+                  <span className="min-w-0 line-clamp-2 leading-snug">
                     {item.title} × {toPersianDigits(item.quantity)}
                   </span>
-                  <span className="shrink-0 num-tabular">{formatToman(item.totalPrice)}</span>
+                  <span className="shrink-0 pt-0.5 num-tabular">{formatToman(item.totalPrice)}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <b className="num-tabular">مجموع: {formatToman(order.total)}</b>
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2.5 border-t pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <b className="text-sm num-tabular sm:text-base">مجموع: {formatToman(order.total)}</b>
+              <div className="flex flex-wrap items-center gap-2">
                 {order.payment?.refId && (
                   <span className="text-xs text-muted-foreground num-tabular" dir="ltr">
                     ref: {order.payment.refId}
@@ -184,7 +189,7 @@ function OrdersList() {
               </div>
             </div>
             {order.cancelReason && (
-              <p className="text-xs text-muted-foreground">علت لغو: {order.cancelReason}</p>
+              <p className="text-xs leading-relaxed text-muted-foreground">علت لغو: {order.cancelReason}</p>
             )}
           </CardContent>
         </Card>

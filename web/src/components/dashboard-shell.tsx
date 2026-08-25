@@ -32,9 +32,9 @@ export function DashboardShell({
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
+    <div className="grid gap-5 lg:grid-cols-[200px_1fr] xl:grid-cols-[220px_1fr]">
       {/* Mobile/tablet: horizontal scroll chips */}
-      <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden">
+      <nav className="-mx-1 flex gap-2 overflow-x-auto pb-1 pt-0.5 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
         {navItems.map((item) => {
           const active = isActive(item);
           return (
@@ -42,11 +42,13 @@ export function DashboardShell({
               key={item.href}
               href={item.href}
               className={cn(
-                'flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors',
-                active ? 'border-primary bg-primary text-primary-foreground' : 'bg-card text-foreground/80 hover:bg-accent',
+                'flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium leading-none transition-colors',
+                active
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'bg-card text-foreground/80 hover:bg-accent',
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="h-3.5 w-3.5 shrink-0" />
               {item.label}
             </Link>
           );
@@ -55,7 +57,7 @@ export function DashboardShell({
 
       {/* Desktop: persistent sidebar */}
       <aside className="hidden lg:block">
-        <div className="sticky top-20 space-y-1 rounded-xl border bg-card p-3 shadow-xs">
+        <div className="sticky top-20 space-y-0.5 rounded-xl border bg-card p-2 shadow-xs">
           {navItems.map((item) => {
             const active = isActive(item);
             return (
@@ -63,19 +65,21 @@ export function DashboardShell({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors',
-                  active ? 'bg-primary text-primary-foreground font-semibold shadow-soft' : 'text-foreground/80 hover:bg-accent',
+                  'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm leading-snug transition-colors',
+                  active
+                    ? 'bg-primary font-semibold text-primary-foreground shadow-soft'
+                    : 'text-foreground/80 hover:bg-accent',
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
         </div>
       </aside>
 
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 space-y-0">{children}</div>
     </div>
   );
 }

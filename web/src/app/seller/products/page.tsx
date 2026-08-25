@@ -132,7 +132,7 @@ function ProductsList() {
           actionHref={search ? undefined : '/seller/products/new'}
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {filtered.map((product) => {
             const status = STATUS_LABELS[product.status] ?? { label: product.status, variant: 'outline' as const };
             return (
@@ -149,27 +149,33 @@ function ProductsList() {
                     <Badge variant={status.variant}>{status.label}</Badge>
                     {product.stock === 0 && <Badge variant="destructive">بدون موجودی</Badge>}
                   </div>
-                  <h3 className="line-clamp-2 min-h-10 text-sm font-medium">{product.title}</h3>
-                  <p className="text-xs text-muted-foreground">{product.category?.name ?? 'دسته‌بندی نشده'}</p>
-                  <p className="text-base font-extrabold num-tabular">{formatToman(product.price)}</p>
-                  <p className="text-xs text-muted-foreground num-tabular">
+                  <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-5">{product.title}</h3>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {product.category?.name ?? 'دسته‌بندی نشده'}
+                  </p>
+                  <p className="text-base font-extrabold leading-snug num-tabular">{formatToman(product.price)}</p>
+                  <p className="text-xs leading-snug text-muted-foreground num-tabular">
                     {toPersianDigits(product.soldCount)} فروش · امتیاز {toPersianDigits(product.ratingAvg.toFixed(1))}
                   </p>
-                  <div className="flex gap-2 pt-1.5">
-                    <Link href={`/seller/products/${product.id}`} className="flex-1">
+                  <div className="flex items-center gap-2 pt-1.5">
+                    <Link href={`/seller/products/${product.id}`} className="min-w-0 flex-1">
                       <Button size="sm" variant="outline" className="w-full gap-1">
                         <Edit className="h-3.5 w-3.5" /> ویرایش
                       </Button>
                     </Link>
                     <Button
-                      size="sm"
+                      size="icon-sm"
                       variant="ghost"
-                      className="text-destructive hover:bg-destructive-bg hover:text-destructive"
+                      className="shrink-0 text-destructive hover:bg-destructive-bg hover:text-destructive"
                       onClick={() => deleteProduct(product.id)}
                       disabled={deletingId === product.id}
                       aria-label="حذف محصول"
                     >
-                      {deletingId === product.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                      {deletingId === product.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
                     </Button>
                   </div>
                 </CardContent>

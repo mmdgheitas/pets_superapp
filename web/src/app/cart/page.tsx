@@ -85,21 +85,21 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <div className="space-y-3 lg:col-span-2">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
-              <CardContent className="flex gap-4 p-4">
-                <Skeleton className="h-24 w-24 shrink-0 rounded-lg" />
+              <CardContent className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+                <Skeleton className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24" />
                 <div className="flex-1 space-y-2 py-1">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-4 w-[75%]" />
+                  <Skeleton className="h-4 w-[35%]" />
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-        <Skeleton className="h-56 rounded-xl" />
+        <Skeleton className="h-52 rounded-xl" />
       </div>
     );
   }
@@ -119,37 +119,52 @@ export default function CartPage() {
   const hasUnavailable = cart.items.some((i) => !i.available);
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-extrabold sm:text-2xl">سبد خرید ({toPersianDigits(cart.itemCount)} کالا)</h1>
+    <div className="space-y-4 sm:space-y-5">
+      <h1 className="font-display text-xl font-extrabold sm:text-2xl">
+        سبد خرید{' '}
+        <span className="text-base font-semibold text-muted-foreground num-tabular sm:text-lg">
+          ({toPersianDigits(cart.itemCount)} کالا)
+        </span>
+      </h1>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <div className="space-y-3 lg:col-span-2">
           {cart.items.map((item) => (
-            <Card key={item.id} className={pendingId === item.id ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
-              <CardContent className="flex gap-4 p-4">
-                <Link href={`/products/${item.product.slug}`} className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
+            <Card
+              key={item.id}
+              className={pendingId === item.id ? 'opacity-60 transition-opacity' : 'transition-opacity'}
+            >
+              <CardContent className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+                <Link
+                  href={`/products/${item.product.slug}`}
+                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted sm:h-24 sm:w-24"
+                >
                   {item.product.imageUrl ? (
-                    <Image src={item.product.imageUrl} alt={item.product.title} fill className="object-cover" />
+                    <Image src={item.product.imageUrl} alt={item.product.title} fill className="object-cover" sizes="96px" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-3xl">🐾</div>
                   )}
                 </Link>
-                <div className="flex flex-1 flex-col justify-between gap-2">
-                  <div>
-                    <Link href={`/products/${item.product.slug}`} className="line-clamp-2 text-sm font-medium transition-colors hover:text-primary">
+                <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
+                  <div className="min-w-0 space-y-1">
+                    <Link
+                      href={`/products/${item.product.slug}`}
+                      className="line-clamp-2 text-sm font-medium leading-snug transition-colors hover:text-primary"
+                    >
                       {item.product.title}
                     </Link>
                     {!item.available && (
-                      <p className="mt-1 flex items-center gap-1 text-xs font-medium text-destructive">
-                        <AlertTriangle className="h-3.5 w-3.5" /> موجودی کافی نیست — تعداد را اصلاح کنید
+                      <p className="flex items-start gap-1 text-xs font-medium leading-snug text-destructive">
+                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        موجودی کافی نیست — تعداد را اصلاح کنید
                       </p>
                     )}
-                    <p className="mt-1 text-xs text-muted-foreground num-tabular">
+                    <p className="text-xs text-muted-foreground num-tabular">
                       {formatToman(item.product.price)} / عدد
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                    <div className="flex items-center gap-1.5">
                       <QuantityStepper
                         size="sm"
                         value={item.quantity}
@@ -167,7 +182,9 @@ export default function CartPage() {
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
-                    <div className="font-bold text-foreground num-tabular">{formatToman(item.lineTotal)}</div>
+                    <div className="text-sm font-bold text-foreground num-tabular sm:text-base">
+                      {formatToman(item.lineTotal)}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -176,15 +193,15 @@ export default function CartPage() {
         </div>
 
         <Card className="h-fit lg:sticky lg:top-20">
-          <CardContent className="space-y-3 p-5">
-            <h2 className="font-bold">خلاصه سفارش</h2>
-            <div className="flex justify-between text-sm text-muted-foreground">
+          <CardContent className="space-y-3 p-4 sm:p-5">
+            <h2 className="text-base font-bold leading-none">خلاصه سفارش</h2>
+            <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
               <span>جمع کالاها ({toPersianDigits(cart.itemCount)})</span>
-              <span className="num-tabular">{formatToman(cart.subtotal)}</span>
+              <span className="shrink-0 num-tabular">{formatToman(cart.subtotal)}</span>
             </div>
-            <div className="flex justify-between border-t pt-3 text-base font-bold">
+            <div className="flex items-center justify-between gap-3 border-t pt-3 text-base font-bold">
               <span>مبلغ قابل پرداخت</span>
-              <span className="text-primary num-tabular">{formatToman(cart.subtotal)}</span>
+              <span className="shrink-0 text-primary num-tabular">{formatToman(cart.subtotal)}</span>
             </div>
             <Button
               className="w-full"
@@ -195,12 +212,12 @@ export default function CartPage() {
               ادامه فرایند خرید <ArrowLeft className="h-4 w-4" />
             </Button>
             {hasUnavailable && (
-              <p className="text-center text-xs text-destructive">
+              <p className="text-center text-xs leading-6 text-destructive">
                 برای ادامه، ابتدا کالاهای بدون موجودی کافی را اصلاح یا حذف کنید.
               </p>
             )}
-            <p className="flex items-center justify-center gap-1.5 pt-1 text-xs text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-success" /> پرداخت امن با درگاه زرین‌پال
+            <p className="flex items-center justify-center gap-1.5 pt-0.5 text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> پرداخت امن با درگاه زرین‌پال
             </p>
           </CardContent>
         </Card>

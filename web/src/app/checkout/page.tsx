@@ -82,17 +82,18 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-xl font-extrabold sm:text-2xl">تکمیل خرید</h1>
+    <div className="mx-auto max-w-3xl space-y-5 sm:space-y-6">
+      <h1 className="font-display text-xl font-extrabold sm:text-2xl">تکمیل خرید</h1>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-6">
+      <div className="grid gap-5 lg:grid-cols-[1fr_300px] lg:gap-6 xl:grid-cols-[1fr_320px]">
+        <div className="min-w-0 space-y-5">
           <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <MapPin className="h-[18px] w-[18px] text-primary" /> آدرس تحویل
+            <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
+              <CardTitle className="flex min-w-0 items-center gap-2 text-base">
+                <MapPin className="h-[18px] w-[18px] shrink-0 text-primary" />
+                <span className="truncate">آدرس تحویل</span>
               </CardTitle>
-              <Link href="/profile">
+              <Link href="/profile" className="shrink-0">
                 <Button variant="ghost" size="sm" className="gap-1">
                   <Plus className="h-3.5 w-3.5" /> آدرس جدید
                 </Button>
@@ -100,7 +101,7 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-2.5">
               {addresses.length === 0 && (
-                <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                <p className="rounded-lg border border-dashed p-3.5 text-sm leading-7 text-muted-foreground sm:p-4">
                   هنوز آدرسی ثبت نکرده‌اید — از صفحه پروفایل یک آدرس اضافه کنید.
                 </p>
               )}
@@ -110,8 +111,10 @@ export default function CheckoutPage() {
                   <label
                     key={addr.id}
                     className={cn(
-                      'flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 text-sm transition-colors',
-                      isSelected ? 'border-primary bg-accent/60 ring-1 ring-primary' : 'hover:border-primary/30',
+                      'flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 text-sm transition-colors sm:gap-3 sm:p-3.5',
+                      isSelected
+                        ? 'border-primary bg-accent/60 ring-1 ring-primary'
+                        : 'hover:border-primary/30',
                     )}
                   >
                     <input
@@ -129,14 +132,16 @@ export default function CheckoutPage() {
                     >
                       {isSelected && <Check className="h-3 w-3" />}
                     </span>
-                    <span>
-                      <b>{addr.title ?? addr.receiverName}</b>
-                      {addr.isDefault && (
-                        <span className="ms-2 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                          پیش‌فرض
-                        </span>
-                      )}
-                      <p className="mt-0.5 text-muted-foreground">
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <b className="leading-snug">{addr.title ?? addr.receiverName}</b>
+                        {addr.isDefault && (
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold leading-none text-primary">
+                            پیش‌فرض
+                          </span>
+                        )}
+                      </span>
+                      <p className="mt-1 text-xs leading-6 text-muted-foreground sm:text-sm">
                         {addr.province}، {addr.city}، {addr.addressLine}
                       </p>
                     </span>
@@ -149,17 +154,17 @@ export default function CheckoutPage() {
 
         {cart && (
           <Card className="h-fit lg:sticky lg:top-20">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle className="text-base">خلاصه پرداخت</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">جمع کالاها ({toPersianDigits(cart.itemCount)})</span>
-                <span className="num-tabular">{formatToman(cart.subtotal)}</span>
+                <span className="shrink-0 num-tabular">{formatToman(cart.subtotal)}</span>
               </div>
-              <div className="flex justify-between border-t pt-3 text-base font-bold">
+              <div className="flex items-center justify-between gap-3 border-t pt-3 text-base font-bold">
                 <span>مبلغ نهایی</span>
-                <span className="text-primary num-tabular">{formatToman(cart.subtotal)}</span>
+                <span className="shrink-0 text-primary num-tabular">{formatToman(cart.subtotal)}</span>
               </div>
 
               <PriceConfirmedBadge />
@@ -167,7 +172,7 @@ export default function CheckoutPage() {
               <ReservationCountdown label="پس از ثبت، موجودی تا این زمان رزرو می‌شود" />
 
               <Button
-                className="mt-1 w-full"
+                className="w-full"
                 size="lg"
                 onClick={pay}
                 loading={processing}
@@ -176,9 +181,10 @@ export default function CheckoutPage() {
                 {processing ? 'در حال اتصال به درگاه…' : 'پرداخت و ثبت سفارش'}
               </Button>
 
-              <div className="space-y-1.5 border-t pt-3 text-xs text-muted-foreground">
-                <p className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> پرداخت امن از طریق درگاه زرین‌پال
+              <div className="border-t pt-3 text-xs text-muted-foreground">
+                <p className="flex items-start gap-1.5 leading-6">
+                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                  پرداخت امن از طریق درگاه زرین‌پال
                 </p>
               </div>
             </CardContent>
